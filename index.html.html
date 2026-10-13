@@ -160,10 +160,6 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 .sidebar-group-btns button { width:30px; height:30px; border-radius:50%; border:none; font-weight:bold; cursor:pointer; font-size:1em; }
 .btn-plus { background:var(--success); color:#fff; }
 .btn-minus { background:var(--danger); color:#fff; }
-.wheel-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:1000; justify-content:center; align-items:center; padding:20px; }
-.wheel-overlay.show { display:flex; }
-.wheel-overlay-content { background:linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius:20px; padding:30px; max-width:600px; width:100%; max-height:90vh; overflow-y:auto; border:3px solid var(--accent); position:relative; }
-.wheel-overlay-close { position:absolute; top:10px; left:10px; background:var(--danger); color:#fff; border:none; width:40px; height:40px; border-radius:50%; font-size:1.5em; cursor:pointer; }
 .lesson-card { background:rgba(255,255,255,.1); border-radius:12px; padding:15px; margin:10px 0; display:flex; align-items:center; gap:15px; transition:all .2s; }
 .lesson-card:hover { background:rgba(255,255,255,.15); transform:translateX(-5px); }
 .lesson-icon { font-size:2.5em; }
@@ -632,8 +628,8 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 </div>
 
 <script>
-// إعدادات JSONBin
-const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6acbc907ffd5d16053620679';
+// إعدادات JSONBin المحدثة
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6ace8aefffd5d16053687dff';
 const JSONBIN_KEY = '$2a$10$JKB7nuxHsyJ8KLe0S8vIDOLSfE82MQ1JiWi/IRZxsiPq8ToTq2xFm';
 
 let DB = {
@@ -652,6 +648,7 @@ let currentDraw = { card:null, group:null };
 let pollInterval = null;
 let modalDraw = { card: null, group: null };
 window.studentLBType = 'school';
+window.teacherLBType = 'school';
 
 const THEMES = {
   default: { name: '🌟 الافتراضي', colors: { primary:'#46178f', primaryLight:'#7b2cbf', accent:'#ffd60a', dark:'#1a0933', warning:'#ff9500' }, preview: 'linear-gradient(135deg, #46178f, #7b2cbf)' },
@@ -752,7 +749,17 @@ async function loadData() {
       if (!DB.cards) DB.cards = [];
       if (!DB.lessons) DB.lessons = [];
       if (!DB.students) DB.students = [];
-      if (!DB.teachers) DB.teachers = [{user:'ahmed', pass:'987@@'}];
+      if (!DB.teachers) DB.teachers = [];
+      
+      // إجبار تحديث كلمة مرور المدرس الأساسي
+      let mainT = DB.teachers.find(t => t.user === 'ahmed');
+      if (!mainT) {
+        DB.teachers.push({user:'ahmed', pass:'987@@'});
+        save();
+      } else if (mainT.pass !== '987@@') {
+        mainT.pass = '987@@';
+        save();
+      }
       
       if (DB.theme) {
         if (typeof DB.theme === 'string' && THEMES[DB.theme]) {
@@ -806,7 +813,7 @@ async function initApp() {
       if (currentUser) {
         if (currentUser.role === 'teacher') {
           renderTeacherStats(); renderGroups(); renderClasses(); renderCards(); renderQuestions();
-          renderLog(); renderLeaderboard('school'); renderLessons(); renderStudents();
+          renderLog(); renderLeaderboard(window.teacherLBType || 'school'); renderLessons(); renderStudents();
           renderSidebar(); updateClassFilters();
         } else if (currentUser.role === 'leader') {
           loadLeader(); renderLeaderCard(); renderLeaderLessons();
@@ -1185,9 +1192,9 @@ function updateClassFilters() {
   const pc = document.getElementById('pointsClass');
   if (pc) pc.innerHTML = '<option value="">📚 اختر الفصل</option>' + opts;
   const lb = document.getElementById('lbClassFilter');
-  if (lb) lb.innerHTML = '<option value="">📚 اختر الفصل</option>' + opts;
+  if (lb) { const curLb = lb.value; lb.innerHTML = '<option value="">📚 اختر الفصل</option>' + opts; lb.value = curLb; }
   const sf = document.getElementById('studentClassFilter');
-  if (sf) sf.innerHTML = '<option value="">📚 اختر الفصل</option>' + opts;
+  if (sf) { const curSf = sf.value; sf.innerHTML = '<option value="">📚 اختر الفصل</option>' + opts; sf.value = curSf; }
   const lc = document.getElementById('lessonClass');
   if (lc) lc.innerHTML = '<option value="">🏫 اختر الفصل</option>' + opts;
 }
@@ -1470,6 +1477,7 @@ async function clearLog() {
 }
 
 function renderLeaderboard(type) {
+  window.teacherLBType = type;
   const lbFilter = document.getElementById('lbClassFilter');
   if (type === 'class') {
     lbFilter.style.display = 'block';
