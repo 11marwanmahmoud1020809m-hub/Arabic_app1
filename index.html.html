@@ -7,14 +7,9 @@
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/tajawal@5.0.0/index.css" rel="stylesheet">
 <style id="themeStyle">
 :root { 
-  --primary: #46178f; 
-  --primary-light: #7b2cbf; 
-  --accent: #ffd60a; 
-  --success: #06a77d; 
-  --danger: #e63946; 
-  --info: #457b9d; 
-  --dark: #1a0933; 
-  --warning: #ff9500;
+  --primary: #46178f; --primary-light: #7b2cbf; --accent: #ffd60a; 
+  --success: #06a77d; --danger: #e63946; --info: #457b9d; 
+  --dark: #1a0933; --warning: #ff9500;
   --bg-gradient: linear-gradient(135deg, var(--dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
 }
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Tajawal',sans-serif; }
@@ -289,7 +284,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
         <div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap">
           <button class="btn" onclick="showFileUpload()">📁 استعراض من الكمبيوتر</button>
           <button class="btn btn-info" onclick="showLinkInput()">🔗 عرض من رابط</button>
-          <button class="btn btn-warning" onclick="openWheelOverlay()">🎯 عجلة الكروت</button>
+          <button class="btn btn-warning" onclick="openDrawModal()">🎯 سحب كارت</button>
         </div>
         <div class="presentation-viewer" id="presentationViewer">
           <p style="opacity:.5; text-align:center; padding:40px; color:#333">
@@ -313,10 +308,8 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
     <div class="card">
       <h2>⚙️ إعدادات المظهر</h2>
       <p style="opacity:.8; text-align:center; margin-bottom:20px">اختر الثيم المناسب أو خصص الألوان بنفسك</p>
-      
       <h3 style="margin:20px 0 10px">🎨 الثيمات الجاهزة</h3>
       <div class="theme-grid" id="themeGrid"></div>
-      
       <div class="color-picker-section">
         <h3 style="margin-bottom:15px">🖌️ تخصيص الألوان</h3>
         <div class="color-row">
@@ -347,7 +340,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
     </div>
   </div>
 
-  <!-- باقي التبويبات (نفس الكود السابق) -->
+  <!-- باقي التبويبات -->
   <div id="tab-classes" class="tab-content" style="display:none">
     <div class="card">
       <h2>🏫 إدارة الفصول</h2>
@@ -594,18 +587,43 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
   </div>
 </div>
 
-<!-- Overlay العجلة -->
-<div class="wheel-overlay" id="wheelOverlay">
-  <div class="wheel-overlay-content">
-    <button class="wheel-overlay-close" onclick="closeWheelOverlay()">✕</button>
-    <h2>🎯 عجلة الكروت</h2>
-    <div class="wheel-container">
-      <div class="wheel-pointer">🔻</div>
-      <div class="wheel" id="overlayWheel"></div>
-      <div class="wheel-center">ض</div>
+<!-- Modal سحب الكروت السريع -->
+<div class="modal-bg" id="drawModalBg">
+  <div class="modal" style="max-width: 600px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+      <h2>🎯 سحب كارت سريع</h2>
+      <button class="btn btn-danger btn-sm" onclick="closeDrawModal()">✕</button>
     </div>
-    <button class="btn btn-lg glow" onclick="spinOverlayWheel()">🎯 لف العجلة</button>
-    <div id="overlayWheelResult" style="margin-top:20px"></div>
+    <div id="modalDrawStep1">
+      <h3>🎡 لف العجلة</h3>
+      <div class="wheel-container">
+        <div class="wheel-pointer">🔻</div>
+        <div class="wheel" id="modalDrawWheel"></div>
+        <div class="wheel-center">ض</div>
+      </div>
+      <button class="btn btn-lg glow" onclick="spinModalDrawWheel()">🎯 لف العجلة</button>
+    </div>
+    <div id="modalDrawStep2" style="display:none">
+      <h3>👥 اختر المجموعة</h3>
+      <div class="revealed-card" style="background:linear-gradient(135deg, #6c757d, #495057); color:#fff">
+        <div class="card-type" id="modalPendingType">🎴 كارت</div>
+        <div class="card-title">🔒 الكارت مقفل</div>
+        <div class="card-desc">اختر المجموعة</div>
+      </div>
+      <select id="modalDrawGroupSelect" style="max-width:400px; margin:10px auto; display:block"></select>
+      <div class="flex-center" style="margin-top:15px">
+        <button class="btn btn-success btn-lg" onclick="sendModalCardToGroup()">📤 إرسال للقائد</button>
+        <button class="btn btn-secondary" onclick="resetModalDraw()">🔄 إعادة</button>
+      </div>
+    </div>
+    <div id="modalDrawStep3" style="display:none">
+      <h3>📤 تم الإرسال!</h3>
+      <div class="card" style="max-width:500px; margin:0 auto">
+        <div style="font-size:4em; margin:15px 0">✅</div>
+        <p style="font-size:1.2em">تم إرسال الكارت لـ <strong id="modalSentGroupName" style="color:var(--accent)"></strong></p>
+        <button class="btn btn-lg" onclick="resetModalDraw()">🎯 سحب كارت تاني</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -620,7 +638,7 @@ const JSONBIN_KEY = '$2a$10$JKB7nuxHsyJ8KLe0S8vIDOLSfE82MQ1JiWi/IRZxsiPq8ToTq2xF
 
 let DB = {
   classes: [], groups: [], questions: [], cards: [], lessons: [], students: [],
-  teachers: [{user:'ahmed', pass:'1234'}],
+  teachers: [{user:'ahmed', pass:'987@@'}],
   plusValues: [10, 20, 50, 100, 200],
   minusValues: [10, 20, 50, 100, 200],
   log: [],
@@ -632,8 +650,9 @@ let currentUser = null;
 let currentAuthRole = null;
 let currentDraw = { card:null, group:null };
 let pollInterval = null;
+let modalDraw = { card: null, group: null };
+window.studentLBType = 'school';
 
-// الثيمات
 const THEMES = {
   default: { name: '🌟 الافتراضي', colors: { primary:'#46178f', primaryLight:'#7b2cbf', accent:'#ffd60a', dark:'#1a0933', warning:'#ff9500' }, preview: 'linear-gradient(135deg, #46178f, #7b2cbf)' },
   ocean: { name: '🌊 المحيط', colors: { primary:'#0077b6', primaryLight:'#00b4d8', accent:'#ffd60a', dark:'#03045e', warning:'#f77f00' }, preview: 'linear-gradient(135deg, #0077b6, #00b4d8)' },
@@ -733,7 +752,8 @@ async function loadData() {
       if (!DB.cards) DB.cards = [];
       if (!DB.lessons) DB.lessons = [];
       if (!DB.students) DB.students = [];
-      if (!DB.teachers) DB.teachers = [{user:'ahmed', pass:'1234'}];
+      if (!DB.teachers) DB.teachers = [{user:'ahmed', pass:'987@@'}];
+      
       if (DB.theme) {
         if (typeof DB.theme === 'string' && THEMES[DB.theme]) {
           const theme = THEMES[DB.theme];
@@ -791,7 +811,8 @@ async function initApp() {
         } else if (currentUser.role === 'leader') {
           loadLeader(); renderLeaderCard(); renderLeaderLessons();
         } else if (currentUser.role === 'student') {
-          renderStudentLeaderboard('school'); renderStudentLessons();
+          renderStudentLeaderboard(window.studentLBType || 'school');
+          renderStudentLessons();
         }
       }
     }, 3000);
@@ -800,44 +821,26 @@ async function initApp() {
   }
 }
 
-// ============ نظام عرض الملفات ============
 function showFileUpload() {
   showModal(`
     <h2>📁 استعراض من الكمبيوتر</h2>
     <p style="margin-bottom:15px; opacity:.8">اختر نوع الملف:</p>
-    
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin:20px 0">
       <div class="card" style="text-align:center; cursor:pointer; padding:20px" onclick="triggerFileInput('image/*')">
-        <div style="font-size:3em; margin-bottom:10px">🖼️</div>
-        <h3>صور</h3>
-        <p style="font-size:.85em; opacity:.7">JPG, PNG, GIF</p>
+        <div style="font-size:3em; margin-bottom:10px">🖼️</div><h3>صور</h3><p style="font-size:.85em; opacity:.7">JPG, PNG, GIF</p>
       </div>
-      
       <div class="card" style="text-align:center; cursor:pointer; padding:20px" onclick="triggerFileInput('video/*')">
-        <div style="font-size:3em; margin-bottom:10px">🎥</div>
-        <h3>فيديو</h3>
-        <p style="font-size:.85em; opacity:.7">MP4, WEBM</p>
+        <div style="font-size:3em; margin-bottom:10px">🎥</div><h3>فيديو</h3><p style="font-size:.85em; opacity:.7">MP4, WEBM</p>
       </div>
-      
       <div class="card" style="text-align:center; cursor:pointer; padding:20px" onclick="triggerFileInput('.pdf')">
-        <div style="font-size:3em; margin-bottom:10px">📄</div>
-        <h3>PDF</h3>
-        <p style="font-size:.85em; opacity:.7">مستندات PDF</p>
+        <div style="font-size:3em; margin-bottom:10px">📄</div><h3>PDF</h3><p style="font-size:.85em; opacity:.7">مستندات PDF</p>
       </div>
     </div>
-    
     <div style="margin-top:20px; padding:15px; background:rgba(255,214,10,.1); border-radius:10px; border:1px solid rgba(255,214,10,.3)">
-      <p style="font-size:.9em; opacity:.8">
-        💡 <strong>لعرض PowerPoint بشكل كامل:</strong><br>
-        استخدم زر "🔗 عرض من رابط" وارفع الملف على Google Drive أو OneDrive
-      </p>
+      <p style="font-size:.9em; opacity:.8">💡 <strong>لعرض PowerPoint بشكل كامل:</strong><br>استخدم زر "🔗 عرض من رابط" وارفع الملف على Google Drive أو OneDrive</p>
     </div>
-    
     <input type="file" id="fileInput" style="display:none" onchange="handleLocalFile(event)">
-    
-    <div class="flex-center" style="margin-top:20px">
-      <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
-    </div>
+    <div class="flex-center" style="margin-top:20px"><button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button></div>
   `);
 }
 
@@ -850,10 +853,8 @@ function triggerFileInput(accept) {
 function handleLocalFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-  
   const viewer = document.getElementById('presentationViewer');
   const url = URL.createObjectURL(file);
-  
   if (file.type.startsWith('image/')) {
     viewer.innerHTML = `<img src="${url}" alt="${file.name}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
     toast('✅ تم تحميل الصورة');
@@ -866,37 +867,22 @@ function handleLocalFile(event) {
   } else {
     toast('❌ نوع الملف غير مدعوم', 'err');
   }
-  
   closeModal();
 }
 
 function showLinkInput() {
   showModal(`
     <h2>🔗 عرض من رابط</h2>
-    <p style="margin-bottom:15px; opacity:.8">
-      ارفع الملف على Google Drive أو OneDrive، شاركه كـ "أي شخص لديه الرابط"، ثم الصق الرابط هنا
-    </p>
-    
+    <p style="margin-bottom:15px; opacity:.8">ارفع الملف على Google Drive أو OneDrive، شاركه كـ "أي شخص لديه الرابط"، ثم الصق الرابط هنا</p>
     <label>📎 رابط الملف:</label>
     <input type="text" id="presentationLink" placeholder="https://drive.google.com/... أو https://1drv.ms/...">
-    
     <div style="margin-top:15px; padding:15px; background:rgba(255,214,10,.1); border-radius:10px; border:1px solid rgba(255,214,10,.3)">
       <h3 style="font-size:1em; margin-bottom:10px">💡 كيفية الحصول على الرابط:</h3>
       <p style="font-size:.9em; opacity:.8; line-height:1.6">
-        <strong>Google Drive:</strong><br>
-        1. ارفع الملف على Google Drive<br>
-        2. اضغط كليك يمين → "مشاركة"<br>
-        3. اختر "أي شخص لديه الرابط"<br>
-        4. انسخ الرابط والصقه هنا<br><br>
-        
-        <strong>OneDrive:</strong><br>
-        1. ارفع الملف على OneDrive<br>
-        2. اضغط "مشاركة"<br>
-        3. اختر "أي شخص لديه الرابط"<br>
-        4. انسخ الرابط والصقه هنا
+        <strong>Google Drive:</strong> ارفع الملف → كليك يمين "مشاركة" → "أي شخص لديه الرابط" → انسخ الرابط.<br>
+        <strong>OneDrive:</strong> ارفع الملف → "مشاركة" → "أي شخص لديه الرابط" → انسخ الرابط.
       </p>
     </div>
-    
     <div class="flex-center" style="margin-top:20px">
       <button class="btn btn-success" onclick="loadFromLink()">🚀 عرض</button>
       <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
@@ -907,42 +893,100 @@ function showLinkInput() {
 function loadFromLink() {
   const link = document.getElementById('presentationLink').value.trim();
   if (!link) return toast('❌ أدخل رابط الملف', 'err');
-  
   const viewer = document.getElementById('presentationViewer');
-  
-  // تحويل رابط Google Drive
   if (link.includes('drive.google.com')) {
     const match = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match) {
-      const fileId = match[1];
-      const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-      viewer.innerHTML = `<iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>`;
-      closeModal();
-      toast('✅ تم تحميل العرض من Google Drive');
-    } else {
-      toast('❌ رابط Google Drive غير صحيح', 'err');
-    }
-  }
-  // تحويل رابط OneDrive
-  else if (link.includes('1drv.ms') || link.includes('onedrive')) {
-    const embedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(link)}`;
-    viewer.innerHTML = `<iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>`;
-    closeModal();
-    toast('✅ تم تحميل العرض من OneDrive');
-  }
-  // رابط مباشر
-  else if (link.includes('http')) {
-    const embedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(link)}`;
-    viewer.innerHTML = `<iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>`;
-    closeModal();
-    toast('✅ تم تحميل العرض');
-  }
-  else {
+      viewer.innerHTML = `<iframe src="https://drive.google.com/file/d/${match[1]}/preview" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>`;
+      closeModal(); toast('✅ تم تحميل العرض من Google Drive');
+    } else { toast('❌ رابط Google Drive غير صحيح', 'err'); }
+  } else if (link.includes('1drv.ms') || link.includes('onedrive')) {
+    viewer.innerHTML = `<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(link)}" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>`;
+    closeModal(); toast('✅ تم تحميل العرض من OneDrive');
+  } else if (link.includes('http')) {
+    viewer.innerHTML = `<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(link)}" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>`;
+    closeModal(); toast('✅ تم تحميل العرض');
+  } else {
     toast('❌ رابط غير صحيح', 'err');
   }
 }
 
-// باقي الدوال (نفس الكود السابق)
+// ========== دوال سحب الكروت السريع (Modal) ==========
+function openDrawModal() {
+  document.getElementById('drawModalBg').classList.add('show');
+  resetModalDraw();
+}
+
+function closeDrawModal() {
+  document.getElementById('drawModalBg').classList.remove('show');
+}
+
+function resetModalDraw() {
+  modalDraw = { card: null, group: null };
+  document.getElementById('modalDrawStep1').style.display = 'block';
+  document.getElementById('modalDrawStep2').style.display = 'none';
+  document.getElementById('modalDrawStep3').style.display = 'none';
+  renderModalDrawWheel();
+}
+
+function renderModalDrawWheel() {
+  const wheel = document.getElementById('modalDrawWheel');
+  if (!wheel) return;
+  if (!DB.cards.length) { wheel.style.background = '#666'; return; }
+  const colors = ['#e63946','#06a77d','#ffd60a','#457b9d','#f77f00','#8338ec','#fb5607','#3a86ff','#ff006e','#80ed99'];
+  const n = DB.cards.length;
+  let grad = 'conic-gradient(';
+  for (let i = 0; i < n; i++) {
+    const start = (i * 360 / n);
+    const end = ((i+1) * 360 / n);
+    grad += `${colors[i % colors.length]} ${start}deg ${end}deg${i<n-1?',':''}`;
+  }
+  grad += ')';
+  wheel.style.background = grad;
+  wheel.style.transform = 'rotate(0deg)';
+}
+
+function spinModalDrawWheel() {
+  if (!DB.cards.length) return toast('❌ أضف كروت أولاً', 'err');
+  if (!DB.groups.length) return toast('❌ لا توجد مجموعات', 'err');
+  const wheel = document.getElementById('modalDrawWheel');
+  const idx = Math.floor(Math.random() * DB.cards.length);
+  const n = DB.cards.length;
+  const segAngle = 360 / n;
+  const targetAngle = 360*6 + (360 - (idx * segAngle + segAngle/2));
+  wheel.style.transition = 'transform 5s cubic-bezier(.17,.67,.21,.99)';
+  wheel.style.transform = `rotate(${targetAngle}deg)`;
+  setTimeout(() => {
+    modalDraw.card = DB.cards[idx];
+    showModalDrawStep2();
+  }, 5100);
+}
+
+function showModalDrawStep2() {
+  document.getElementById('modalDrawStep1').style.display = 'none';
+  document.getElementById('modalDrawStep2').style.display = 'block';
+  const typeIcons = {question:'❓ سؤال', bonus:'🎁 بونص', challenge:'⚔️ تحدي', trap:'⚠️ فخ', special:'✨ خاص'};
+  document.getElementById('modalPendingType').innerText = typeIcons[modalDraw.card.type] || '🎴 كارت';
+  const sel = document.getElementById('modalDrawGroupSelect');
+  sel.innerHTML = DB.groups.map(g => {
+    const cls = DB.classes.find(c => c.id === g.classId);
+    return `<option value="${g.id}">${escapeHtml(g.name)} - ${cls?escapeHtml(cls.name):''} (رقم ${g.groupNumber})</option>`;
+  }).join('');
+}
+
+async function sendModalCardToGroup() {
+  const gid = parseInt(document.getElementById('modalDrawGroupSelect').value);
+  modalDraw.group = DB.groups.find(g => g.id === gid);
+  DB.pendingCards[modalDraw.group.id] = { id: Date.now(), card: modalDraw.card, groupId: modalDraw.group.id, groupName: modalDraw.group.name, timestamp: Date.now(), viewed: false };
+  addLog('card-draw', `📤 تم إرسال كارت "${modalDraw.card.title}" لـ ${modalDraw.group.name}`);
+  await save();
+  document.getElementById('modalDrawStep2').style.display = 'none';
+  document.getElementById('modalDrawStep3').style.display = 'block';
+  document.getElementById('modalSentGroupName').innerText = modalDraw.group.name;
+  toast(`✅ تم إرسال الكارت لـ ${modalDraw.group.name}`);
+}
+// =====================================================
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1295,10 +1339,7 @@ async function deleteCard(id) {
 function renderDrawWheel() {
   const wheel = document.getElementById('drawWheel');
   if (!wheel) return;
-  if (!DB.cards.length) {
-    wheel.style.background = '#666';
-    return;
-  }
+  if (!DB.cards.length) { wheel.style.background = '#666'; return; }
   const colors = ['#e63946','#06a77d','#ffd60a','#457b9d','#f77f00','#8338ec','#fb5607','#3a86ff','#ff006e','#80ed99'];
   const n = DB.cards.length;
   let grad = 'conic-gradient(';
@@ -1598,6 +1639,7 @@ function switchStudentTab(name, e) {
 }
 
 function renderStudentLeaderboard(type) {
+  window.studentLBType = type;
   const filter = document.getElementById('studentClassFilter');
   if (type === 'class') {
     filter.style.display = 'block';
@@ -1724,88 +1766,6 @@ async function quickAddPoints(groupId, points) {
   await save();
   renderSidebar();
   toast(`${points>0?'+':''}${points} لـ ${g.name}`);
-}
-
-function openWheelOverlay() {
-  document.getElementById('wheelOverlay').classList.add('show');
-  renderOverlayWheel();
-}
-
-function closeWheelOverlay() {
-  document.getElementById('wheelOverlay').classList.remove('show');
-}
-
-function renderOverlayWheel() {
-  const wheel = document.getElementById('overlayWheel');
-  if (!DB.cards.length) {
-    wheel.style.background = '#666';
-    return;
-  }
-  const colors = ['#e63946','#06a77d','#ffd60a','#457b9d','#f77f00','#8338ec','#fb5607','#3a86ff','#ff006e','#80ed99'];
-  const n = DB.cards.length;
-  let grad = 'conic-gradient(';
-  for (let i = 0; i < n; i++) {
-    const start = (i * 360 / n);
-    const end = ((i+1) * 360 / n);
-    grad += `${colors[i % colors.length]} ${start}deg ${end}deg${i<n-1?',':''}`;
-  }
-  grad += ')';
-  wheel.style.background = grad;
-  wheel.style.transform = 'rotate(0deg)';
-}
-
-function spinOverlayWheel() {
-  if (!DB.cards.length) return toast('❌ أضف كروت أولاً', 'err');
-  const wheel = document.getElementById('overlayWheel');
-  const idx = Math.floor(Math.random() * DB.cards.length);
-  const n = DB.cards.length;
-  const segAngle = 360 / n;
-  const targetAngle = 360*6 + (360 - (idx * segAngle + segAngle/2));
-  wheel.style.transition = 'transform 5s cubic-bezier(.17,.67,.21,.99)';
-  wheel.style.transform = `rotate(${targetAngle}deg)`;
-  setTimeout(() => {
-    const card = DB.cards[idx];
-    const result = document.getElementById('overlayWheelResult');
-    result.innerHTML = `<div class="revealed-card show" style="background:linear-gradient(135deg, var(--accent), var(--warning)); color:var(--primary)">
-      <div class="card-title">${escapeHtml(card.title)}</div>
-      <div class="card-desc">${escapeHtml(card.desc || '')}</div>
-      ${card.points ? `<div class="card-points">💎 ${card.points} نقطة</div>` : ''}
-    </div>
-    <div class="flex-center" style="margin-top:15px">
-      <button class="btn btn-success" onclick="sendOverlayCard(${card.id})">📤 إرسال لقائد</button>
-      <button class="btn btn-secondary" onclick="closeWheelOverlay()">❌ إغلاق</button>
-    </div>`;
-  }, 5100);
-}
-
-async function sendOverlayCard(cardId) {
-  const card = DB.cards.find(c => c.id === cardId);
-  if (!card) return;
-  showModal(`
-    <h2>📤 إرسال الكارت لقائد</h2>
-    <select id="overlayGroupSelect">
-      ${DB.groups.map(g => {
-        const cls = DB.classes.find(c => c.id === g.classId);
-        return `<option value="${g.id}">${escapeHtml(g.name)} - ${cls ? escapeHtml(cls.name) : ''}</option>`;
-      }).join('')}
-    </select>
-    <div class="flex-center" style="margin-top:15px">
-      <button class="btn btn-success" onclick="confirmSendOverlayCard(${cardId})">✅ إرسال</button>
-      <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
-    </div>
-  `);
-}
-
-async function confirmSendOverlayCard(cardId) {
-  const card = DB.cards.find(c => c.id === cardId);
-  const gid = parseInt(document.getElementById('overlayGroupSelect').value);
-  const group = DB.groups.find(g => g.id === gid);
-  DB.pendingCards[group.id] = { id: Date.now(), card: card, groupId: group.id, groupName: group.name, timestamp: Date.now(), viewed: false };
-  addLog('card-draw', `📤 تم إرسال كارت "${card.title}" لـ ${group.name}`);
-  await save();
-  closeModal();
-  closeWheelOverlay();
-  toast(`✅ تم إرسال الكارت لـ ${group.name}`);
 }
 
 function showModal(html) {
