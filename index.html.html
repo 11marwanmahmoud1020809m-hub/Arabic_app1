@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌟 لعبة الضاد</title>
+<title>🌟 لعبة الضاد - النسخة المطورة</title>
 <link href="https://cdn.jsdelivr.net/npm/@fontsource/tajawal@5.0.0/index.css" rel="stylesheet">
 <style id="themeStyle">
 :root { 
@@ -47,9 +47,10 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 .sync-dot { width:8px; height:8px; border-radius:50%; background:var(--success); animation:blink 1.5s infinite; }
 @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
 .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; background:rgba(0,0,0,.2); padding:10px; border-radius:15px; }
-.tab { padding:10px 16px; background:rgba(255,255,255,.1); border-radius:10px; cursor:pointer; border:2px solid transparent; transition:all .2s; display:flex; align-items:center; gap:6px; font-weight:bold; font-size:.95em; }
+.tab { padding:10px 16px; background:rgba(255,255,255,.1); border-radius:10px; cursor:pointer; border:2px solid transparent; transition:all .2s; display:flex; align-items:center; gap:6px; font-weight:bold; font-size:.95em; position:relative; }
 .tab:hover { background:rgba(255,255,255,.2); }
 .tab.active { background:var(--accent); color:var(--primary); border-color:#fff; }
+.tab .notification-badge { position:absolute; top:-5px; left:-5px; background:var(--danger); color:#fff; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:.75em; font-weight:bold; border:2px solid var(--dark); }
 .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:15px; }
 .grid-2 { display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:15px; }
 .group-card { background:linear-gradient(135deg, rgba(255,255,255,.2), rgba(255,255,255,.05)); border-radius:15px; padding:20px; transition:all .3s; border:2px solid transparent; position:relative; overflow:hidden; }
@@ -108,7 +109,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:100; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(8px); overflow-y:auto; }
 .modal-bg.show { display:flex; }
 .modal { background:linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius:20px; padding:30px; max-width:800px; width:100%; max-height:90vh; overflow-y:auto; border:3px solid var(--accent); box-shadow:0 20px 60px rgba(0,0,0,.5); margin:auto; }
-.toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--success); color:#fff; padding:15px 30px; border-radius:12px; z-index:200; font-weight:bold; box-shadow:0 10px 30px rgba(0,0,0,.3); animation:slideDown .3s; display:flex; align-items:center; gap:10px; font-size:1.1em; }
+.toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--success); color:#fff; padding:15px 30px; border-radius:12px; z-index:200; font-weight:bold; box-shadow:0 10px 30px rgba(0,0,0,.3); animation:slideDown .3s; display:flex; align-items:center; gap:10px; font-size:1.1em; max-width:90%; }
 .toast.err { background:var(--danger); }
 @keyframes slideDown { from{transform:translate(-50%,-100px); opacity:0;} to{transform:translate(-50%,0); opacity:1;} }
 .flex-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
@@ -119,6 +120,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 .badge-info { background:var(--info); color:#fff; }
 .badge-success { background:var(--success); color:#fff; }
 .badge-warning { background:var(--warning); color:#fff; }
+.badge-danger { background:var(--danger); color:#fff; }
 .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin:20px 0; }
 .stat-box { background:rgba(255,255,255,.1); padding:20px; border-radius:15px; text-align:center; border:2px solid rgba(255,255,255,.2); }
 .stat-box .stat-icon { font-size:2.5em; margin-bottom:10px; }
@@ -131,6 +133,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 .log-item.points-plus { border-color:var(--success); }
 .log-item.points-minus { border-color:var(--danger); }
 .log-item.card-draw { border-color:var(--warning); }
+.log-item.task-submit { border-color:var(--info); }
 .waiting-card { background:rgba(255,255,255,.05); border:3px dashed rgba(255,214,10,.4); border-radius:20px; padding:40px 20px; text-align:center; margin:20px 0; }
 .waiting-card .wait-icon { font-size:4em; margin-bottom:15px; animation:waitPulse 2s infinite; }
 @keyframes waitPulse { 0%,100%{transform:scale(1); opacity:.6;} 50%{transform:scale(1.1); opacity:1;} }
@@ -182,6 +185,537 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 .color-row { display:flex; align-items:center; gap:15px; margin:10px 0; flex-wrap:wrap; }
 .color-row label { flex:1; min-width:150px; font-weight:bold; }
 .color-row input[type="color"] { width:80px; height:50px; border:none; border-radius:10px; cursor:pointer; }
+
+/* ==================== واجهات الواجبات (Tasks) ==================== */
+.task-card {
+  background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
+  border-radius: 15px;
+  padding: 20px;
+  margin: 15px 0;
+  border-right: 5px solid var(--accent);
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+}
+.task-card:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+}
+.task-card.overdue {
+  border-right-color: var(--danger);
+  background: linear-gradient(135deg, rgba(230,57,70,.15), rgba(230,57,70,.05));
+}
+.task-card.completed {
+  border-right-color: var(--success);
+  background: linear-gradient(135deg, rgba(6,167,125,.15), rgba(6,167,125,.05));
+}
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.task-title {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: var(--accent);
+  flex: 1;
+}
+.task-status {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: .85em;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.status-pending { background: var(--warning); color: #fff; }
+.status-submitted { background: var(--info); color: #fff; }
+.status-graded { background: var(--success); color: #fff; }
+.status-overdue { background: var(--danger); color: #fff; }
+.task-description {
+  margin: 10px 0;
+  line-height: 1.6;
+  opacity: .9;
+}
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+  font-size: .9em;
+}
+.task-meta-item {
+  background: rgba(0,0,0,.2);
+  padding: 5px 12px;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.task-points-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(0,0,0,.2);
+  border-radius: 10px;
+}
+.task-points-box {
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.05);
+}
+.task-points-box.individual {
+  border: 2px solid var(--success);
+}
+.task-points-box.team {
+  border: 2px solid var(--info);
+}
+.task-points-box.penalty {
+  border: 2px solid var(--danger);
+}
+.task-points-label {
+  font-size: .85em;
+  opacity: .8;
+  margin-bottom: 5px;
+}
+.task-points-value {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+.task-points-value.plus { color: var(--success); }
+.task-points-value.minus { color: var(--danger); }
+.task-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+.task-deadline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,.2);
+  border-radius: 10px;
+  font-weight: bold;
+}
+.task-deadline.urgent {
+  background: rgba(230,57,70,.2);
+  color: var(--danger);
+  animation: urgentPulse 1s infinite;
+}
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+.task-submission {
+  background: rgba(255,255,255,.05);
+  border: 2px dashed rgba(255,255,255,.3);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: center;
+}
+.task-submission.uploaded {
+  border: 2px solid var(--success);
+  background: rgba(6,167,125,.1);
+}
+.submission-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  background: var(--success);
+  color: #fff;
+  border-radius: 10px;
+  margin: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* ==================== نظام الشارات (Badges) ==================== */
+.badges-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+.badge-item {
+  background: rgba(255,255,255,.1);
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+  transition: all .3s;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.badge-item:hover {
+  transform: translateY(-5px) scale(1.05);
+  border-color: var(--accent);
+}
+.badge-item.locked {
+  opacity: .4;
+  filter: grayscale(1);
+}
+.badge-item.unlocked {
+  background: linear-gradient(135deg, rgba(255,214,10,.2), rgba(255,149,0,.1));
+  border-color: var(--accent);
+  box-shadow: 0 5px 20px rgba(255,214,10,.3);
+}
+.badge-icon {
+  font-size: 3em;
+  margin-bottom: 8px;
+  display: block;
+}
+.badge-name {
+  font-weight: bold;
+  font-size: .9em;
+  margin-bottom: 5px;
+}
+.badge-desc {
+  font-size: .75em;
+  opacity: .7;
+  line-height: 1.4;
+}
+.badge-new-alert {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, var(--accent), var(--warning));
+  color: var(--primary);
+  padding: 40px;
+  border-radius: 25px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  z-index: 1000;
+  text-align: center;
+  animation: badgePop .8s;
+  max-width: 90%;
+}
+@keyframes badgePop {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* ==================== نظام التقارير (Reports) ==================== */
+.report-card {
+  background: rgba(255,255,255,.1);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 15px 0;
+}
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(255,255,255,.2);
+}
+.report-student-name {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: var(--accent);
+}
+.report-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+.report-stat {
+  background: rgba(0,0,0,.2);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+}
+.report-stat-value {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: var(--accent);
+}
+.report-stat-label {
+  font-size: .85em;
+  opacity: .8;
+  margin-top: 5px;
+}
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(0,0,0,.3);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--accent));
+  transition: width .5s;
+  border-radius: 10px;
+}
+.progress-fill.danger {
+  background: linear-gradient(90deg, var(--danger), #ff6b6b);
+}
+
+/* ==================== نظام التعليقات ==================== */
+.comments-section {
+  background: rgba(255,255,255,.05);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.comment-item {
+  background: rgba(255,255,255,.1);
+  padding: 10px;
+  border-radius: 10px;
+  margin: 8px 0;
+  border-right: 3px solid var(--accent);
+}
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: .85em;
+}
+.comment-author {
+  font-weight: bold;
+  color: var(--accent);
+}
+.comment-time {
+  opacity: .6;
+}
+.comment-text {
+  line-height: 1.5;
+}
+.comment-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.comment-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.95);
+  color: #333;
+}
+
+/* ==================== نظام التحديات الأسبوعية ==================== */
+.challenge-card {
+  background: linear-gradient(135deg, rgba(255,214,10,.2), rgba(255,149,0,.1));
+  border: 3px solid var(--accent);
+  border-radius: 20px;
+  padding: 25px;
+  margin: 20px 0;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(255,214,10,.3);
+  position: relative;
+  overflow: hidden;
+}
+.challenge-card::before {
+  content: '🏆';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  font-size: 8em;
+  opacity: .1;
+  transform: rotate(15deg);
+}
+.challenge-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.challenge-desc {
+  margin: 15px 0;
+  line-height: 1.6;
+}
+.challenge-reward {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--primary);
+  padding: 10px 25px;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+.challenge-timer {
+  background: rgba(0,0,0,.3);
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 15px;
+  font-family: monospace;
+  font-size: 1.2em;
+}
+
+/* ==================== نظام الإشعارات (Notifications) ==================== */
+.notification-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 500;
+  max-width: 350px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.notification-item {
+  background: rgba(0,0,0,.85);
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border-right: 4px solid var(--accent);
+  box-shadow: 0 5px 20px rgba(0,0,0,.3);
+  animation: slideIn .3s;
+  backdrop-filter: blur(10px);
+}
+@keyframes slideIn {
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.notification-item.success { border-right-color: var(--success); }
+.notification-item.warning { border-right-color: var(--warning); }
+.notification-item.error { border-right-color: var(--danger); }
+.notification-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.notification-body {
+  font-size: .9em;
+  opacity: .9;
+  line-height: 1.5;
+}
+
+/* ==================== نظام الأعضاء المتصلين ==================== */
+.online-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(6,167,125,.2);
+  border-radius: 15px;
+  font-size: .85em;
+  border: 1px solid rgba(6,167,125,.4);
+}
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: blink 1.5s infinite;
+}
+.members-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,.1);
+  border-radius: 20px;
+  font-size: .9em;
+}
+.member-chip.online { background: rgba(6,167,125,.2); border: 1px solid rgba(6,167,125,.4); }
+.member-chip.offline { opacity: .5; }
+
+/* ==================== تحسينات عامة ==================== */
+.file-upload-area {
+  border: 3px dashed rgba(255,255,255,.3);
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .3s;
+  margin: 15px 0;
+}
+.file-upload-area:hover, .file-upload-area.dragover {
+  border-color: var(--accent);
+  background: rgba(255,214,10,.1);
+}
+.file-upload-icon {
+  font-size: 3em;
+  margin-bottom: 10px;
+  color: var(--accent);
+}
+.countdown-timer {
+  font-family: monospace;
+  font-size: 1.2em;
+  background: rgba(0,0,0,.3);
+  padding: 5px 15px;
+  border-radius: 10px;
+  display: inline-block;
+}
+.achievement-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5em;
+  z-index: 1000;
+  animation: achievementFloat 3s forwards;
+  pointer-events: none;
+}
+@keyframes achievementFloat {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  70% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -150%) scale(1); opacity: 0; }
+}
+.stats-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 15px 0;
+}
+.comparison-box {
+  background: rgba(255,255,255,.05);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid rgba(255,255,255,.1);
+}
+.comparison-box.winner {
+  border-color: var(--accent);
+  background: rgba(255,214,10,.1);
+}
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+.quick-stat {
+  background: rgba(0,0,0,.2);
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+}
+.quick-stat-value {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--accent);
+}
+.quick-stat-label {
+  font-size: .75em;
+  opacity: .7;
+  margin-top: 3px;
+}
 </style>
 </head>
 <body>
@@ -193,6 +727,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
       <div class="logo-icon">ض</div>
       <div class="logo-text">
         <h1>🌟 لعبة الضاد 🌟</h1>
+        <p style="opacity:.8">النسخة المطورة - أقوى من Classroom</p>
       </div>
     </div>
     <div class="card">
@@ -262,11 +797,14 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
     <div class="tab" onclick="switchTab('classes', event)"><span>🏫</span> الفصول</div>
     <div class="tab" onclick="switchTab('groups', event)"><span>👥</span> المجموعات</div>
     <div class="tab" onclick="switchTab('lessons', event)"><span>📚</span> الدروس</div>
+    <div class="tab" onclick="switchTab('tasks', event)"><span>📝</span> الواجبات <span class="notification-badge" id="tasksBadge" style="display:none">0</span></div>
     <div class="tab" onclick="switchTab('students', event)"><span>🎓</span> الطلاب</div>
     <div class="tab" onclick="switchTab('questions', event)"><span>❓</span> الأسئلة</div>
     <div class="tab" onclick="switchTab('cards', event)"><span>🎴</span> الكروت</div>
     <div class="tab" onclick="switchTab('draw', event)"><span>🎯</span> سحب الكروت</div>
     <div class="tab" onclick="switchTab('points', event)"><span>💎</span> النقاط</div>
+    <div class="tab" onclick="switchTab('challenges', event)"><span>🏆</span> التحديات</div>
+    <div class="tab" onclick="switchTab('reports', event)"><span>📊</span> التقارير</div>
     <div class="tab" onclick="switchTab('log', event)"><span>📜</span> السجل</div>
     <div class="tab" onclick="switchTab('leaderboard', event)"><span>🏆</span> الترتيب</div>
     <div class="tab" onclick="switchTab('settings', event)"><span>⚙️</span> الإعدادات</div>
@@ -376,6 +914,71 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
     <div id="lessonsList"></div>
   </div>
 
+  <!-- ============ تبويب الواجبات (Tasks) - جديد ============ -->
+  <div id="tab-tasks" class="tab-content" style="display:none">
+    <div class="card">
+      <h2>📝 إدارة الواجبات والتاسكات</h2>
+      <p style="opacity:.8; text-align:center; margin-bottom:15px">
+        رفع الواجبات، تحديد نقاط المكافأة والعقوبة، ومتابعة التسليم
+      </p>
+      
+      <h3 style="margin:15px 0 10px">➕ رفع واجب جديد</h3>
+      <div class="flex-row">
+        <input type="text" id="taskTitle" placeholder="✏️ عنوان الواجب">
+        <select id="taskClass">
+          <option value="">🏫 اختر الفصل</option>
+        </select>
+      </div>
+      <textarea id="taskDescription" rows="3" placeholder="📝 وصف الواجب وتعليمات التنفيذ"></textarea>
+      
+      <div class="flex-row" style="margin-top:10px">
+        <div>
+          <label>💎 نقاط فردية (عند الإنجاز):</label>
+          <input type="number" id="taskIndividualPoints" placeholder="مثال: 10" value="10">
+        </div>
+        <div>
+          <label>👥 نقاط جماعية (عند الإنجاز):</label>
+          <input type="number" id="taskTeamPoints" placeholder="مثال: 5" value="5">
+        </div>
+      </div>
+      
+      <div class="flex-row">
+        <div>
+          <label>⚠️ خصم فردي (عند عدم الإنجاز):</label>
+          <input type="number" id="taskIndividualPenalty" placeholder="مثال: 5" value="5">
+        </div>
+        <div>
+          <label>⚠️ خصم جماعي (عند عدم الإنجاز):</label>
+          <input type="number" id="taskTeamPenalty" placeholder="مثال: 5" value="5">
+        </div>
+      </div>
+      
+      <div class="flex-row">
+        <div>
+          <label>📅 تاريخ التسليم:</label>
+          <input type="datetime-local" id="taskDeadline">
+        </div>
+        <div>
+          <label>📎 ملف الواجب (اختياري):</label>
+          <input type="file" id="taskFile" accept=".pdf,.doc,.docx,.pptx,.jpg,.png,.mp4">
+        </div>
+      </div>
+      
+      <div class="flex-center" style="margin-top:15px">
+        <button class="btn btn-success btn-lg" onclick="addTask()">📤 رفع الواجب</button>
+      </div>
+    </div>
+    
+    <h2 style="margin-top:20px">📋 قائمة الواجبات</h2>
+    <div class="flex-center" style="margin-bottom:15px">
+      <button class="btn btn-sm" onclick="renderTasks('all')">📚 الكل</button>
+      <button class="btn btn-sm btn-info" onclick="renderTasks('pending')">⏳ قيد التسليم</button>
+      <button class="btn btn-sm btn-success" onclick="renderTasks('submitted')">✅ تم التسليم</button>
+      <button class="btn btn-sm btn-danger" onclick="renderTasks('overdue')">⚠️ متأخر</button>
+    </div>
+    <div id="tasksList"></div>
+  </div>
+
   <div id="tab-students" class="tab-content" style="display:none">
     <div class="card">
       <h2>🎓 الطلاب المسجلين</h2>
@@ -420,9 +1023,34 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
       <input type="text" id="cardTitle" placeholder="✏️ عنوان الكارت">
       <textarea id="cardDesc" rows="3" placeholder="📝 شرح الكارت / فائدته"></textarea>
       <input type="number" id="cardPoints" placeholder="💎 النقاط (اختياري)">
-      <button class="btn btn-success" onclick="addCard()">➕ إضافة كارت</button>
+      <div class="flex-center" style="margin-top:10px">
+        <button class="btn btn-success" onclick="addCard()">➕ إضافة كارت</button>
+        <button class="btn btn-info" onclick="addSuggestedCards()">🎲 إضافة الكروت المقترحة (10)</button>
+        <button class="btn btn-warning" onclick="resetDrawnCards()">🔄 إعادة تعيين الكروت المسحوبة</button>
+      </div>
     </div>
     <div id="cardsList"></div>
+    
+    <div class="card" style="margin-top:20px">
+      <h3>📊 إحصائيات الكروت</h3>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-icon">🎴</div>
+          <div class="stat-value" id="totalCardsCount">0</div>
+          <div class="stat-label">إجمالي الكروت</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="availableCardsCount">0</div>
+          <div class="stat-label">متاحة للسحب</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-value" id="drawnCardsCount">0</div>
+          <div class="stat-label">تم سحبها</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="tab-draw" class="tab-content" style="display:none">
@@ -482,6 +1110,50 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
     </div>
   </div>
 
+  <!-- ============ تبويب التحديات - جديد ============ -->
+  <div id="tab-challenges" class="tab-content" style="display:none">
+    <div class="card">
+      <h2>🏆 التحديات الأسبوعية</h2>
+      <p style="opacity:.8; text-align:center">تحديات تحفز الطلاب على التنافس الإيجابي</p>
+    </div>
+    
+    <div class="card">
+      <h3>➕ إضافة تحدي جديد</h3>
+      <input type="text" id="challengeTitle" placeholder="✏️ عنوان التحدي">
+      <textarea id="challengeDesc" rows="3" placeholder="📝 وصف التحدي وشروط الفوز"></textarea>
+      <div class="flex-row">
+        <input type="number" id="challengeReward" placeholder="💎 نقاط المكافأة" value="50">
+        <select id="challengeClass">
+          <option value="">🏫 لكل المدرسة</option>
+        </select>
+      </div>
+      <div class="flex-row">
+        <input type="datetime-local" id="challengeDeadline">
+      </div>
+      <button class="btn btn-success" onclick="addChallenge()">➕ إضافة التحدي</button>
+    </div>
+    
+    <div id="challengesList" style="margin-top:20px"></div>
+  </div>
+
+  <!-- ============ تبويب التقارير - جديد ============ -->
+  <div id="tab-reports" class="tab-content" style="display:none">
+    <div class="card">
+      <h2>📊 التقارير والإحصائيات</h2>
+      <p style="opacity:.8; text-align:center">تقارير شاملة عن أداء الطلاب والمجموعات</p>
+      
+      <div class="flex-center" style="margin-bottom:20px">
+        <button class="btn" onclick="renderReports('overview')">📈 نظرة عامة</button>
+        <button class="btn btn-info" onclick="renderReports('students')">🎓 الطلاب</button>
+        <button class="btn btn-success" onclick="renderReports('groups')">👥 المجموعات</button>
+        <button class="btn btn-warning" onclick="renderReports('tasks')">📝 الواجبات</button>
+        <button class="btn btn-danger" onclick="exportReport()">📥 تصدير PDF</button>
+      </div>
+      
+      <div id="reportsContent"></div>
+    </div>
+  </div>
+
   <div id="tab-log" class="tab-content" style="display:none">
     <div class="card">
       <h2>📜 سجل الأحداث</h2>
@@ -503,7 +1175,7 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
   </div>
 </div>
 
-<!-- شاشة القائد -->
+<!-- ============ شاشة القائد - محدثة ============ -->
 <div id="leaderScreen" class="screen">
   <div class="topbar">
     <div class="user-info">
@@ -520,11 +1192,22 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchLeaderTab('card', event)"><span>🎴</span> الكارت السري</div>
+    <div class="tab" onclick="switchLeaderTab('tasks', event)"><span>📝</span> الواجبات <span class="notification-badge" id="leaderTasksBadge" style="display:none">0</span></div>
     <div class="tab" onclick="switchLeaderTab('info', event)"><span>💎</span> نقاطي</div>
+    <div class="tab" onclick="switchLeaderTab('badges', event)"><span>🏅</span> الشارات</div>
     <div class="tab" onclick="switchLeaderTab('lessons', event)"><span>📚</span> الدروس</div>
   </div>
   <div id="leaderTab-card">
     <div id="leaderCardArea"></div>
+  </div>
+  <div id="leaderTab-tasks" style="display:none">
+    <div class="card">
+      <h2>📝 واجبات فريقي</h2>
+      <p style="opacity:.8">
+        👑 بصفتك قائد الفريق، مهمتك جمع الواجبات من أعضاء الفريق وتسليمها للمدرس
+      </p>
+    </div>
+    <div id="leaderTasksList"></div>
   </div>
   <div id="leaderTab-info" style="display:none">
     <div class="card" style="text-align:center">
@@ -544,12 +1227,19 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
       </div>
     </div>
   </div>
+  <div id="leaderTab-badges" style="display:none">
+    <div class="card">
+      <h2>🏅 شارات فريقي</h2>
+      <p style="opacity:.8">الشارات اللي حققها فريقك</p>
+    </div>
+    <div class="badges-container" id="leaderBadgesList"></div>
+  </div>
   <div id="leaderTab-lessons" style="display:none">
     <div id="leaderLessonsList"></div>
   </div>
 </div>
 
-<!-- شاشة الطالب -->
+<!-- ============ شاشة الطالب - محدثة ============ -->
 <div id="studentScreen" class="screen">
   <div class="topbar">
     <div class="user-info">
@@ -565,7 +1255,10 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchStudentTab('ranking', event)"><span>🏆</span> الترتيب</div>
+    <div class="tab" onclick="switchStudentTab('tasks', event)"><span>📝</span> واجباتي <span class="notification-badge" id="studentTasksBadge" style="display:none">0</span></div>
+    <div class="tab" onclick="switchStudentTab('badges', event)"><span>🏅</span> شاراتي</div>
     <div class="tab" onclick="switchStudentTab('lessons', event)"><span>📚</span> الدروس</div>
+    <div class="tab" onclick="switchStudentTab('report', event)"><span>📊</span> تقريري</div>
   </div>
   <div id="studentTab-ranking">
     <div class="card">
@@ -578,8 +1271,24 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
       <div id="studentLeaderboard" class="leaderboard"></div>
     </div>
   </div>
+  <div id="studentTab-tasks" style="display:none">
+    <div class="card">
+      <h2>📝 واجباتي</h2>
+      <p style="opacity:.8">الواجبات المطلوبة منك - سلّمها للقائد</p>
+    </div>
+    <div id="studentTasksList"></div>
+  </div>
+  <div id="studentTab-badges" style="display:none">
+    <div class="card">
+      <h2>🏅 شارتي</h2>
+    </div>
+    <div class="badges-container" id="studentBadgesList"></div>
+  </div>
   <div id="studentTab-lessons" style="display:none">
     <div id="studentLessonsList"></div>
+  </div>
+  <div id="studentTab-report" style="display:none">
+    <div id="studentReportContent"></div>
   </div>
 </div>
 
@@ -627,19 +1336,36 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
   <div class="modal" id="modalContent"></div>
 </div>
 
+<div class="notification-panel" id="notificationPanel"></div>
+
 <script>
-// إعدادات JSONBin المحدثة
+// إعدادات JSONBin
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6ace8aefffd5d16053687dff';
 const JSONBIN_KEY = '$2a$10$JKB7nuxHsyJ8KLe0S8vIDOLSfE82MQ1JiWi/IRZxsiPq8ToTq2xFm';
 
+// ==================== قاعدة البيانات الأساسية ====================
 let DB = {
-  classes: [], groups: [], questions: [], cards: [], lessons: [], students: [],
+  classes: [], 
+  groups: [], 
+  questions: [], 
+  cards: [], 
+  lessons: [], 
+  students: [],
   teachers: [{user:'ahmed', pass:'987@@'}],
   plusValues: [10, 20, 50, 100, 200],
   minusValues: [10, 20, 50, 100, 200],
   log: [],
   pendingCards: {},
-  theme: null
+  theme: null,
+  // ========== البيانات الجديدة ==========
+  tasks: [],              // الواجبات
+  taskSubmissions: {},    // تسليمات الواجبات
+  drawnCards: [],         // الكروت المسحوبة من العجلة
+  challenges: [],         // التحديات الأسبوعية
+  badges: {},             // شارات الطلاب والمجموعات
+  comments: {},           // التعليقات على الواجبات
+  studentProgress: {},    // تقدم الطلاب
+  notifications: []       // الإشعارات
 };
 
 let currentUser = null;
@@ -649,7 +1375,9 @@ let pollInterval = null;
 let modalDraw = { card: null, group: null };
 window.studentLBType = 'school';
 window.teacherLBType = 'school';
+let currentTasksFilter = 'all';
 
+// ==================== الثيمات ====================
 const THEMES = {
   default: { name: '🌟 الافتراضي', colors: { primary:'#46178f', primaryLight:'#7b2cbf', accent:'#ffd60a', dark:'#1a0933', warning:'#ff9500' }, preview: 'linear-gradient(135deg, #46178f, #7b2cbf)' },
   ocean: { name: '🌊 المحيط', colors: { primary:'#0077b6', primaryLight:'#00b4d8', accent:'#ffd60a', dark:'#03045e', warning:'#f77f00' }, preview: 'linear-gradient(135deg, #0077b6, #00b4d8)' },
@@ -661,6 +1389,35 @@ const THEMES = {
   mint: { name: '🌿 النعناع', colors: { primary:'#06a77d', primaryLight:'#005f73', accent:'#ffd60a', dark:'#0a3d2e', warning:'#ee9b00' }, preview: 'linear-gradient(135deg, #06a77d, #005f73)' }
 };
 
+// ==================== الكروت المقترحة (10 كروت جاهزة) ====================
+const SUGGESTED_CARDS = [
+  { type: 'bonus', title: '🎁 كنز النقاط', desc: 'فزت بكنز! احصل على 50 نقطة إضافية لفريقك', points: 50 },
+  { type: 'question', title: '❓ سؤال التحدي', desc: 'أجب على سؤال صعب من المدرس واحصل على 30 نقطة', points: 30 },
+  { type: 'challenge', title: '⚔️ تحدي الفرق', desc: 'تحدى فريقاً آخر في مسابقة سريعة - الفائز يأخذ 40 نقطة', points: 40 },
+  { type: 'trap', title: '⚠️ فخ الخسارة', desc: 'وقعت في الفخ! خصم 20 نقطة من فريقك', points: -20 },
+  { type: 'special', title: '✨ الضعف المزدوج', desc: 'النقاط التالية ستتضاعف! استغل الفرصة', points: 0 },
+  { type: 'bonus', title: '🌟 نجمة الأسبوع', desc: 'تم اختيارك نجمة الأسبوع! 25 نقطة إضافية', points: 25 },
+  { type: 'challenge', title: '🎯 تحدي السرعة', desc: 'أول فريق يجيب على السؤال القادم يحصل على 60 نقطة', points: 60 },
+  { type: 'trap', title: '💣 قنبلة النقاط', desc: 'فقدت 15 نقطة! احذر في المرات القادمة', points: -15 },
+  { type: 'special', title: '🎪 بطاقة الحظ', desc: 'لف العجلة مرة أخرى واحصل على مكافأة إضافية', points: 20 },
+  { type: 'bonus', title: '💰 مكافأة التفوق', desc: 'لفريقك أداء ممتاز! 35 نقطة إضافية', points: 35 }
+];
+
+// ==================== تعريف الشارات (Badges) ====================
+const BADGE_DEFINITIONS = {
+  first_win: { name: '🥇 أول فوز', desc: 'فزت بأول تحدي', icon: '🥇', condition: 'wins >= 1' },
+  top_scorer: { name: '⭐ هداف النقاط', desc: 'حصلت على 500 نقطة أو أكثر', icon: '⭐', condition: 'score >= 500' },
+  task_master: { name: '📝 master الواجبات', desc: 'سلّمت 10 واجبات في الوقت', icon: '📝', condition: 'tasksCompleted >= 10' },
+  streak_7: { name: '🔥 سلسلة 7 أيام', desc: 'حضرت 7 أيام متتالية', icon: '🔥', condition: 'streak >= 7' },
+  perfect_score: { name: '💎 العلامة الكاملة', desc: 'حصلت على كل النقاط في اختبار', icon: '💎', condition: 'perfectTests >= 1' },
+  team_player: { name: '👥 لاعب فريق', desc: 'ساعدت فريقك في 5 تحديات', icon: '🤝', condition: 'teamHelps >= 5' },
+  early_bird: { name: '🌅 الطائر المبكر', desc: 'سلّمت 3 واجبات قبل الموعد', icon: '🌅', condition: 'earlySubmissions >= 3' },
+  champion: { name: '🏆 البطل', desc: 'فزت بالمركز الأول في الفصل', icon: '🏆', condition: 'rank == 1' },
+  explorer: { name: '🗺️ المستكشف', desc: 'شاركت في كل الدروس', icon: '🗺️', condition: 'lessonsViewed >= all' },
+  genius: { name: '🧠 العبقري', desc: 'أجبت على 20 سؤال بشكل صحيح', icon: '🧠', condition: 'correctAnswers >= 20' }
+};
+
+// ==================== دوال الثيمات ====================
 function applyTheme(themeKey) {
   const theme = THEMES[themeKey];
   if (!theme) return;
@@ -735,6 +1492,899 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ==================== نظام الإشعارات (Notifications) ====================
+function showNotification(title, body, type='info') {
+  const panel = document.getElementById('notificationPanel');
+  const notif = document.createElement('div');
+  notif.className = `notification-item ${type}`;
+  notif.innerHTML = `
+    <div class="notification-title">
+      <span>${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️'}</span>
+      <span>${escapeHtml(title)}</span>
+    </div>
+    <div class="notification-body">${escapeHtml(body)}</div>
+  `;
+  panel.appendChild(notif);
+  setTimeout(() => {
+    notif.style.transition = 'opacity .3s';
+    notif.style.opacity = '0';
+    setTimeout(() => notif.remove(), 300);
+  }, 4000);
+}
+
+// ==================== نظام الشارات (Badges System) ====================
+function checkAndAwardBadges() {
+  if (!currentUser) return;
+  
+  const userBadges = DB.badges[currentUser.name] || [];
+  let newBadges = [];
+  
+  // فحص كل شارة
+  Object.keys(BADGE_DEFINITIONS).forEach(badgeKey => {
+    if (userBadges.includes(badgeKey)) return; // حصل عليها بالفعل
+    
+    const badge = BADGE_DEFINITIONS[badgeKey];
+    let earned = false;
+    
+    // منطق بسيط لاكتساب الشارات
+    if (badgeKey === 'first_win' && (DB.studentProgress[currentUser.name]?.wins || 0) >= 1) earned = true;
+    if (badgeKey === 'top_scorer') {
+      const group = DB.groups.find(g => g.id === currentUser.groupId);
+      if (group && (group.score || 0) >= 500) earned = true;
+    }
+    if (badgeKey === 'task_master' && (DB.studentProgress[currentUser.name]?.tasksCompleted || 0) >= 10) earned = true;
+    if (badgeKey === 'streak_7' && (DB.studentProgress[currentUser.name]?.streak || 0) >= 7) earned = true;
+    
+    if (earned) {
+      userBadges.push(badgeKey);
+      newBadges.push(badgeKey);
+      addLog('badge-earned', `🏅 ${currentUser.name} حصل على شارة ${badge.name}`);
+    }
+  });
+  
+  if (newBadges.length > 0) {
+    DB.badges[currentUser.name] = userBadges;
+    save();
+    
+    // عرض رسالة الشارة الجديدة
+    newBadges.forEach(badgeKey => {
+      const badge = BADGE_DEFINITIONS[badgeKey];
+      showBadgeAlert(badge);
+    });
+  }
+}
+
+function showBadgeAlert(badge) {
+  const alert = document.createElement('div');
+  alert.className = 'badge-new-alert';
+  alert.innerHTML = `
+    <div style="font-size:4em; margin-bottom:15px">${badge.icon}</div>
+    <h2 style="color:var(--primary); margin:10px 0">🎉 شارة جديدة!</h2>
+    <h3 style="color:var(--primary); margin:10px 0">${badge.name}</h3>
+    <p style="color:var(--primary); opacity:.8">${badge.desc}</p>
+    <button class="btn" onclick="this.parentElement.remove()" style="margin-top:15px">✨ رائع!</button>
+  `;
+  document.body.appendChild(alert);
+  setTimeout(() => alert.remove(), 8000);
+}
+
+function renderBadges(containerId, userOrGroup) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  const userBadges = DB.badges[userOrGroup] || [];
+  
+  container.innerHTML = Object.keys(BADGE_DEFINITIONS).map(badgeKey => {
+    const badge = BADGE_DEFINITIONS[badgeKey];
+    const unlocked = userBadges.includes(badgeKey);
+    
+    return `
+      <div class="badge-item ${unlocked ? 'unlocked' : 'locked'}">
+        <span class="badge-icon">${badge.icon}</span>
+        <div class="badge-name">${badge.name}</div>
+        <div class="badge-desc">${badge.desc}</div>
+        ${unlocked ? '<div style="margin-top:5px; color:var(--success); font-weight:bold">✅ حصلت عليها</div>' : '<div style="margin-top:5px; opacity:.5">🔒 مقفلة</div>'}
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== نظام الواجبات (Tasks) ====================
+async function addTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  const description = document.getElementById('taskDescription').value.trim();
+  const classId = document.getElementById('taskClass').value;
+  const individualPoints = parseInt(document.getElementById('taskIndividualPoints').value) || 0;
+  const teamPoints = parseInt(document.getElementById('taskTeamPoints').value) || 0;
+  const individualPenalty = parseInt(document.getElementById('taskIndividualPenalty').value) || 0;
+  const teamPenalty = parseInt(document.getElementById('taskTeamPenalty').value) || 0;
+  const deadline = document.getElementById('taskDeadline').value;
+  const fileInput = document.getElementById('taskFile');
+  
+  if (!title) return toast('❌ أدخل عنوان الواجب', 'err');
+  if (!description) return toast('❌ أدخل وصف الواجب', 'err');
+  if (!classId) return toast('❌ اختر الفصل', 'err');
+  if (!deadline) return toast('❌ حدد تاريخ التسليم', 'err');
+  
+  let fileData = null;
+  if (fileInput.files[0]) {
+    const file = fileInput.files[0];
+    fileData = await fileToBase64(file);
+  }
+  
+  const task = {
+    id: Date.now(),
+    title: escapeHtml(title),
+    description: escapeHtml(description),
+    classId: parseInt(classId),
+    individualPoints,
+    teamPoints,
+    individualPenalty,
+    teamPenalty,
+    deadline: new Date(deadline).toISOString(),
+    fileData,
+    fileName: fileInput.files[0] ? fileInput.files[0].name : null,
+    createdAt: Date.now(),
+    createdBy: currentUser.name,
+    status: 'active'
+  };
+  
+  DB.tasks.push(task);
+  DB.taskSubmissions[task.id] = {};
+  DB.comments[task.id] = [];
+  await save();
+  
+  // مسح الحقول
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskDescription').value = '';
+  document.getElementById('taskDeadline').value = '';
+  document.getElementById('taskFile').value = '';
+  
+  addLog('task-created', `📝 تم رفع واجب جديد: ${title} للفصل`);
+  toast('✅ تم رفع الواجب بنجاح!');
+  showNotification('واجب جديد', `تم رفع واجب: ${title}`, 'success');
+  renderTasks('all');
+  updateTaskBadges();
+}
+
+async function fileToBase64(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderTasks(filter = 'all') {
+  currentTasksFilter = filter;
+  const list = document.getElementById('tasksList');
+  if (!list) return;
+  
+  let tasks = [...DB.tasks].sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
+  
+  if (filter === 'pending') {
+    tasks = tasks.filter(t => !isTaskOverdue(t) && !isTaskCompleted(t));
+  } else if (filter === 'submitted') {
+    tasks = tasks.filter(t => isTaskCompleted(t));
+  } else if (filter === 'overdue') {
+    tasks = tasks.filter(t => isTaskOverdue(t) && !isTaskCompleted(t));
+  }
+  
+  if (!tasks.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>لا توجد واجبات</p></div>';
+    return;
+  }
+  
+  list.innerHTML = tasks.map(task => {
+    const cls = DB.classes.find(c => c.id === task.classId);
+    const overdue = isTaskOverdue(task);
+    const completed = isTaskCompleted(task);
+    const submissions = DB.taskSubmissions[task.id] || {};
+    const submissionsCount = Object.keys(submissions).length;
+    const totalGroups = DB.groups.filter(g => g.classId === task.classId).length;
+    const deadlineDate = new Date(task.deadline);
+    const now = new Date();
+    const hoursLeft = Math.max(0, Math.ceil((deadlineDate - now) / (1000 * 60 * 60)));
+    const isUrgent = hoursLeft <= 24 && hoursLeft > 0 && !overdue && !completed;
+    
+    return `
+      <div class="task-card ${overdue && !completed ? 'overdue' : ''} ${completed ? 'completed' : ''}">
+        <div class="task-header">
+          <div class="task-title">📝 ${task.title}</div>
+          <div class="task-status ${completed ? 'status-graded' : overdue ? 'status-overdue' : 'status-pending'}">
+            ${completed ? '✅ مكتمل' : overdue ? '⚠️ متأخر' : '⏳ قيد التسليم'}
+          </div>
+        </div>
+        
+        <div class="task-description">${task.description}</div>
+        
+        <div class="task-meta">
+          <div class="task-meta-item">🏫 ${cls ? cls.name : '-'}</div>
+          <div class="task-meta-item">👤 ${task.createdBy}</div>
+          <div class="task-meta-item">📊 ${submissionsCount}/${totalGroups} مجموعة</div>
+          ${task.fileName ? `<div class="task-meta-item">📎 ${task.fileName}</div>` : ''}
+        </div>
+        
+        <div class="task-deadline ${isUrgent ? 'urgent' : ''}">
+          <span>📅</span>
+          <span>التسليم: ${deadlineDate.toLocaleString('ar-EG')}</span>
+          ${isUrgent ? `<span class="countdown-timer">⏰ متبقي ${hoursLeft} ساعة</span>` : ''}
+        </div>
+        
+        <div class="task-points-row">
+          <div class="task-points-box individual">
+            <div class="task-points-label">💎 نقاط فردية</div>
+            <div class="task-points-value plus">+${task.individualPoints}</div>
+          </div>
+          <div class="task-points-box team">
+            <div class="task-points-label">👥 نقاط جماعية</div>
+            <div class="task-points-value plus">+${task.teamPoints}</div>
+          </div>
+          <div class="task-points-box penalty">
+            <div class="task-points-label">⚠️ خصم فردي</div>
+            <div class="task-points-value minus">-${task.individualPenalty}</div>
+          </div>
+          <div class="task-points-box penalty">
+            <div class="task-points-label">⚠️ خصم جماعي</div>
+            <div class="task-points-value minus">-${task.teamPenalty}</div>
+          </div>
+        </div>
+        
+        <div class="task-actions">
+          ${task.fileName ? `<a href="${task.fileData}" download="${task.fileName}" class="btn btn-sm btn-info">📥 تحميل الملف</a>` : ''}
+          <button class="btn btn-sm btn-success" onclick="viewTaskSubmissions(${task.id})">👁️ عرض التسليمات (${submissionsCount})</button>
+          <button class="btn btn-sm btn-warning" onclick="gradeTask(${task.id})">✅ تقييم</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">🗑️ حذف</button>
+        </div>
+        
+        <div class="comments-section" id="taskComments-${task.id}">
+          ${renderTaskComments(task.id)}
+        </div>
+        
+        <div class="comment-input-row">
+          <input type="text" class="comment-input" id="commentInput-${task.id}" placeholder="💬 اكتب تعليقاً...">
+          <button class="btn btn-sm" onclick="addTaskComment(${task.id})">📤</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function isTaskOverdue(task) {
+  return new Date() > new Date(task.deadline);
+}
+
+function isTaskCompleted(task) {
+  const submissions = DB.taskSubmissions[task.id] || {};
+  const totalGroups = DB.groups.filter(g => g.classId === task.classId).length;
+  return Object.keys(submissions).length >= totalGroups && totalGroups > 0;
+}
+
+function renderTaskComments(taskId) {
+  const comments = DB.comments[taskId] || [];
+  if (!comments.length) {
+    return '<p style="opacity:.6; text-align:center; padding:10px">لا توجد تعليقات بعد</p>';
+  }
+  return comments.map(c => `
+    <div class="comment-item">
+      <div class="comment-header">
+        <span class="comment-author">${escapeHtml(c.author)}</span>
+        <span class="comment-time">${new Date(c.timestamp).toLocaleString('ar-EG')}</span>
+      </div>
+      <div class="comment-text">${escapeHtml(c.text)}</div>
+    </div>
+  `).join('');
+}
+
+async function addTaskComment(taskId) {
+  const input = document.getElementById(`commentInput-${taskId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  
+  if (!DB.comments[taskId]) DB.comments[taskId] = [];
+  DB.comments[taskId].push({
+    author: currentUser.name,
+    text: escapeHtml(text),
+    timestamp: Date.now()
+  });
+  await save();
+  input.value = '';
+  document.getElementById(`taskComments-${taskId}`).innerHTML = renderTaskComments(taskId);
+  toast('✅ تم إضافة التعليق');
+}
+
+function viewTaskSubmissions(taskId) {
+  const task = DB.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  
+  const submissions = DB.taskSubmissions[taskId] || {};
+  const groups = DB.groups.filter(g => g.classId === task.classId);
+  
+  let html = `
+    <h2>👁️ تسليمات واجب: ${task.title}</h2>
+    <p style="opacity:.8">إجمالي المجموعات: ${groups.length} | تم التسليم: ${Object.keys(submissions).length}</p>
+  `;
+  
+  if (!Object.keys(submissions).length) {
+    html += '<div class="empty-state"><div class="empty-icon">📭</div><p>لا توجد تسليمات بعد</p></div>';
+  } else {
+    html += '<div style="margin-top:20px">';
+    Object.keys(submissions).forEach(groupId => {
+      const submission = submissions[groupId];
+      const group = DB.groups.find(g => g.id == groupId);
+      if (!group) return;
+      
+      html += `
+        <div class="task-card completed">
+          <div class="task-header">
+            <div class="task-title">👥 ${escapeHtml(group.name)}</div>
+            <div class="task-status status-submitted">
+              ${submission.graded ? '✅ تم التقييم' : '⏳ قيد التقييم'}
+            </div>
+          </div>
+          <div class="task-meta">
+            <div class="task-meta-item">👑 القائد: ${escapeHtml(submission.submittedBy)}</div>
+            <div class="task-meta-item">📅 ${new Date(submission.submittedAt).toLocaleString('ar-EG')}</div>
+            <div class="task-meta-item">👥 الأعضاء: ${(submission.members || []).length}</div>
+          </div>
+          ${submission.fileData ? `
+            <div style="margin:10px 0">
+              <a href="${submission.fileData}" download="${submission.fileName || 'submission'}" class="btn btn-sm btn-info">📥 تحميل ملف التسليم</a>
+            </div>
+          ` : ''}
+          <div style="margin:10px 0">
+            <strong>📝 ملاحظات القائد:</strong>
+            <p style="opacity:.9; margin-top:5px">${escapeHtml(submission.notes || 'لا توجد ملاحظات')}</p>
+          </div>
+          ${!submission.graded ? `
+            <div class="task-actions">
+              <button class="btn btn-sm btn-success" onclick="approveTaskSubmission(${taskId}, ${groupId}, true)">✅ قبول ومنح النقاط</button>
+              <button class="btn btn-sm btn-danger" onclick="approveTaskSubmission(${taskId}, ${groupId}, false)">❌ رفض وتطبيق الخصم</button>
+            </div>
+          ` : `
+            <div style="padding:10px; background:rgba(6,167,125,.2); border-radius:10px; margin-top:10px">
+              <strong>✅ تم التقييم:</strong> ${submission.approved ? 'مقبول - تم منح النقاط' : 'مرفوض - تم تطبيق الخصم'}
+            </div>
+          `}
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  showModal(html);
+}
+
+async function approveTaskSubmission(taskId, groupId, approved) {
+  const task = DB.tasks.find(t => t.id === taskId);
+  const group = DB.groups.find(g => g.id == groupId);
+  const submission = DB.taskSubmissions[taskId][groupId];
+  
+  if (!task || !group || !submission) return;
+  
+  if (approved) {
+    // منح النقاط الفردية والجماعية
+    group.score = (group.score || 0) + task.teamPoints;
+    addLog('points-plus', `📝 ${group.name} +${task.teamPoints} من واجب ${task.title}`);
+    toast(`✅ تم منح ${task.teamPoints} نقطة جماعية + ${task.individualPoints} فردية`);
+    
+    // تحديث تقدم الطلاب
+    (submission.members || []).forEach(memberName => {
+      if (!DB.studentProgress[memberName]) DB.studentProgress[memberName] = {};
+      DB.studentProgress[memberName].tasksCompleted = (DB.studentProgress[memberName].tasksCompleted || 0) + 1;
+    });
+  } else {
+    // تطبيق الخصم
+    group.score = (group.score || 0) - task.teamPenalty;
+    addLog('points-minus', `📝 ${group.name} -${task.teamPenalty} من واجب ${task.title} (رفض)`);
+    toast(`❌ تم خصم ${task.teamPenalty} نقطة جماعية + ${task.individualPenalty} فردية`);
+  }
+  
+  submission.graded = true;
+  submission.approved = approved;
+  submission.gradedAt = Date.now();
+  
+  await save();
+  viewTaskSubmissions(taskId);
+  showNotification('تم التقييم', `تم تقييم تسليم ${group.name}`, approved ? 'success' : 'warning');
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('⚠️ هل تريد حذف هذا الواجب؟ سيتم حذف كل التسليمات والتعليقات المتعلقة به.')) return;
+  DB.tasks = DB.tasks.filter(t => t.id !== taskId);
+  delete DB.taskSubmissions[taskId];
+  delete DB.comments[taskId];
+  await save();
+  toast('✅ تم حذف الواجب');
+  renderTasks(currentTasksFilter);
+}
+
+function gradeTask(taskId) {
+  viewTaskSubmissions(taskId);
+}
+
+function updateTaskBadges() {
+  const badge = document.getElementById('tasksBadge');
+  if (!badge) return;
+  const pendingTasks = DB.tasks.filter(t => !isTaskOverdue(t) && !isTaskCompleted(t)).length;
+  if (pendingTasks > 0) {
+    badge.textContent = pendingTasks;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ==================== دوال سحب الكروت المحسّنة ====================
+function renderDrawWheel() {
+  const wheel = document.getElementById('drawWheel');
+  if (!wheel) return;
+  
+  // الكروت المتاحة فقط (غير مسحوبة)
+  const availableCards = DB.cards.filter(c => !DB.drawnCards.includes(c.id));
+  
+  if (!availableCards.length) { 
+    wheel.style.background = '#666'; 
+    return; 
+  }
+  
+  const colors = ['#e63946','#06a77d','#ffd60a','#457b9d','#f77f00','#8338ec','#fb5607','#3a86ff','#ff006e','#80ed99'];
+  const n = availableCards.length;
+  let grad = 'conic-gradient(';
+  for (let i = 0; i < n; i++) {
+    const start = (i * 360 / n);
+    const end = ((i+1) * 360 / n);
+    grad += `${colors[i % colors.length]} ${start}deg ${end}deg${i<n-1?',':''}`;
+  }
+  grad += ')';
+  wheel.style.background = grad;
+  wheel.style.transform = 'rotate(0deg)';
+}
+
+function resetDraw() {
+  currentDraw = { card:null, group:null };
+  document.getElementById('drawStep1').style.display = 'block';
+  document.getElementById('drawStep2').style.display = 'none';
+  document.getElementById('drawStep3').style.display = 'none';
+  renderDrawWheel();
+}
+
+function spinDrawWheel() {
+  const availableCards = DB.cards.filter(c => !DB.drawnCards.includes(c.id));
+  
+  if (!availableCards.length) return toast('❌ كل الكروت تم سحبها! استخدم زر "إعادة تعيين"', 'err');
+  if (!DB.groups.length) return toast('❌ لا توجد مجموعات', 'err');
+  
+  const wheel = document.getElementById('drawWheel');
+  const idx = Math.floor(Math.random() * availableCards.length);
+  const n = availableCards.length;
+  const segAngle = 360 / n;
+  const targetAngle = 360*6 + (360 - (idx * segAngle + segAngle/2));
+  wheel.style.transition = 'transform 5s cubic-bezier(.17,.67,.21,.99)';
+  wheel.style.transform = `rotate(${targetAngle}deg)`;
+  
+  setTimeout(() => {
+    currentDraw.card = availableCards[idx];
+    // وضع الكارت في قائمة المسحوبة
+    if (!DB.drawnCards.includes(currentDraw.card.id)) {
+      DB.drawnCards.push(currentDraw.card.id);
+      save();
+    }
+    showDrawStep2();
+  }, 5100);
+}
+
+function showDrawStep2() {
+  document.getElementById('drawStep1').style.display = 'none';
+  document.getElementById('drawStep2').style.display = 'block';
+  const typeIcons = {question:'❓ سؤال', bonus:'🎁 بونص', challenge:'⚔️ تحدي', trap:'⚠️ فخ', special:'✨ خاص'};
+  document.getElementById('pendingType').innerText = typeIcons[currentDraw.card.type] || '🎴 كارت';
+  const sel = document.getElementById('drawGroupSelect');
+  sel.innerHTML = DB.groups.map(g => {
+    const cls = DB.classes.find(c => c.id === g.classId);
+    return `<option value="${g.id}">${escapeHtml(g.name)} - ${cls?escapeHtml(cls.name):''} (رقم ${g.groupNumber})</option>`;
+  }).join('');
+}
+
+async function sendCardToGroup() {
+  const gid = parseInt(document.getElementById('drawGroupSelect').value);
+  currentDraw.group = DB.groups.find(g => g.id === gid);
+  DB.pendingCards[currentDraw.group.id] = { 
+    id: Date.now(), 
+    card: currentDraw.card, 
+    groupId: currentDraw.group.id, 
+    groupName: currentDraw.group.name, 
+    timestamp: Date.now(), 
+    viewed: false 
+  };
+  addLog('card-draw', `📤 تم إرسال كارت "${currentDraw.card.title}" لـ ${currentDraw.group.name}`);
+  await save();
+  document.getElementById('drawStep2').style.display = 'none';
+  document.getElementById('drawStep3').style.display = 'block';
+  document.getElementById('sentGroupName').innerText = currentDraw.group.name;
+  toast(`✅ تم إرسال الكارت لـ ${currentDraw.group.name}`);
+}
+
+async function addSuggestedCards() {
+  const existingTitles = DB.cards.map(c => c.title);
+  let added = 0;
+  
+  SUGGESTED_CARDS.forEach(card => {
+    if (!existingTitles.includes(card.title)) {
+      DB.cards.push({
+        id: Date.now() + Math.random(),
+        type: card.type,
+        title: card.title,
+        desc: card.desc,
+        points: card.points
+      });
+      added++;
+    }
+  });
+  
+  if (added > 0) {
+    await save();
+    toast(`✅ تم إضافة ${added} كارت مقترح`);
+    renderCards();
+  } else {
+    toast('ℹ️ الكروت المقترحة موجودة بالفعل');
+  }
+}
+
+async function resetDrawnCards() {
+  if (!confirm('⚠️ هل تريد إعادة تعيين الكروت المسحوبة؟ ستصبح كل الكروت متاحة للسحب مرة أخرى.')) return;
+  DB.drawnCards = [];
+  await save();
+  toast('✅ تم إعادة تعيين الكروت المسحوبة');
+  renderCards();
+  renderDrawWheel();
+}
+
+function updateCardStats() {
+  const total = DB.cards.length;
+  const drawn = DB.drawnCards.length;
+  const available = total - drawn;
+  
+  const totalEl = document.getElementById('totalCardsCount');
+  const availableEl = document.getElementById('availableCardsCount');
+  const drawnEl = document.getElementById('drawnCardsCount');
+  
+  if (totalEl) totalEl.textContent = total;
+  if (availableEl) availableEl.textContent = available;
+  if (drawnEl) drawnEl.textContent = drawn;
+}
+
+// ==================== نظام التحديات (Challenges) ====================
+async function addChallenge() {
+  const title = document.getElementById('challengeTitle').value.trim();
+  const description = document.getElementById('challengeDesc').value.trim();
+  const reward = parseInt(document.getElementById('challengeReward').value) || 50;
+  const classId = document.getElementById('challengeClass').value;
+  const deadline = document.getElementById('challengeDeadline').value;
+  
+  if (!title || !description) return toast('❌ أكمل بيانات التحدي', 'err');
+  if (!deadline) return toast('❌ حدد تاريخ نهاية التحدي', 'err');
+  
+  const challenge = {
+    id: Date.now(),
+    title: escapeHtml(title),
+    description: escapeHtml(description),
+    reward,
+    classId: classId ? parseInt(classId) : null,
+    deadline: new Date(deadline).toISOString(),
+    createdAt: Date.now(),
+    createdBy: currentUser.name,
+    winners: []
+  };
+  
+  DB.challenges.push(challenge);
+  await save();
+  
+  document.getElementById('challengeTitle').value = '';
+  document.getElementById('challengeDesc').value = '';
+  document.getElementById('challengeDeadline').value = '';
+  
+  toast('✅ تم إضافة التحدي');
+  showNotification('تحدي جديد', `تم إضافة تحدي: ${title}`, 'success');
+  renderChallenges();
+}
+
+function renderChallenges() {
+  const list = document.getElementById('challengesList');
+  if (!list) return;
+  
+  const challenges = [...DB.challenges].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  
+  if (!challenges.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><p>لا توجد تحديات</p></div>';
+    return;
+  }
+  
+  list.innerHTML = challenges.map(challenge => {
+    const cls = challenge.classId ? DB.classes.find(c => c.id === challenge.classId) : null;
+    const deadlineDate = new Date(challenge.deadline);
+    const now = new Date();
+    const isActive = deadlineDate > now;
+    const daysLeft = Math.max(0, Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24)));
+    
+    return `
+      <div class="challenge-card" style="${!isActive ? 'opacity:.5;' : ''}">
+        <div class="challenge-title">${challenge.title}</div>
+        <div class="challenge-desc">${challenge.description}</div>
+        <div class="challenge-reward">💎 ${challenge.reward} نقطة</div>
+        <div class="task-meta">
+          <div class="task-meta-item">🏫 ${cls ? cls.name : 'كل المدرسة'}</div>
+          <div class="task-meta-item">👤 ${challenge.createdBy}</div>
+        </div>
+        ${isActive ? `
+          <div class="challenge-timer">⏰ متبقي ${daysLeft} يوم</div>
+        ` : `
+          <div style="padding:10px; background:rgba(230,57,70,.2); border-radius:10px; margin-top:15px">
+            ❌ انتهى التحدي
+          </div>
+        `}
+        ${currentUser?.role === 'teacher' ? `
+          <div class="task-actions">
+            <button class="btn btn-sm btn-success" onclick="awardChallenge(${challenge.id})">🏆 تحديد الفائز</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteChallenge(${challenge.id})">🗑️ حذف</button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function awardChallenge(challengeId) {
+  const challenge = DB.challenges.find(c => c.id === challengeId);
+  if (!challenge) return;
+  
+  const groups = challenge.classId 
+    ? DB.groups.filter(g => g.classId === challenge.classId)
+    : DB.groups;
+  
+  showModal(`
+    <h2>🏆 تحديد فائز التحدي</h2>
+    <p style="opacity:.8">${challenge.title}</p>
+    <select id="challengeWinner">
+      ${groups.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('')}
+    </select>
+    <div class="flex-center" style="margin-top:15px">
+      <button class="btn btn-success" onclick="confirmAwardChallenge(${challengeId})">✅ تأكيد</button>
+      <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
+    </div>
+  `);
+}
+
+async function confirmAwardChallenge(challengeId) {
+  const challenge = DB.challenges.find(c => c.id === challengeId);
+  const groupId = parseInt(document.getElementById('challengeWinner').value);
+  const group = DB.groups.find(g => g.id === groupId);
+  
+  if (!challenge || !group) return;
+  
+  group.score = (group.score || 0) + challenge.reward;
+  challenge.winners.push(groupId);
+  
+  addLog('challenge-won', `🏆 ${group.name} فاز بتحدي "${challenge.title}" وحصل على ${challenge.reward} نقطة`);
+  await save();
+  
+  closeModal();
+  toast(`🏆 ${group.name} فاز بالتحدي!`);
+  showNotification('فائز جديد', `${group.name} فاز بتحدي: ${challenge.title}`, 'success');
+  renderChallenges();
+}
+
+async function deleteChallenge(challengeId) {
+  if (!confirm('⚠️ حذف التحدي؟')) return;
+  DB.challenges = DB.challenges.filter(c => c.id !== challengeId);
+  await save();
+  toast('✅ تم حذف التحدي');
+  renderChallenges();
+}
+
+// ==================== نظام التقارير (Reports) ====================
+function renderReports(type) {
+  const container = document.getElementById('reportsContent');
+  if (!container) return;
+  
+  if (type === 'overview') {
+    const totalStudents = DB.students.length;
+    const totalGroups = DB.groups.length;
+    const totalTasks = DB.tasks.length;
+    const completedTasks = DB.tasks.filter(t => isTaskCompleted(t)).length;
+    const totalScore = DB.groups.reduce((sum, g) => sum + (g.score || 0), 0);
+    const totalCards = DB.cards.length;
+    const drawnCards = DB.drawnCards.length;
+    
+    container.innerHTML = `
+      <div class="report-card">
+        <div class="report-header">
+          <h2>📈 نظرة عامة</h2>
+          <div class="online-indicator"><span class="online-dot"></span> مباشر</div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-icon">🎓</div>
+            <div class="stat-value">${totalStudents}</div>
+            <div class="stat-label">طالب</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value">${totalGroups}</div>
+            <div class="stat-label">مجموعة</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value">${totalTasks}</div>
+            <div class="stat-label">واجب</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">${completedTasks}</div>
+            <div class="stat-label">واجب مكتمل</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">💎</div>
+            <div class="stat-value">${totalScore}</div>
+            <div class="stat-label">إجمالي النقاط</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">🎴</div>
+            <div class="stat-value">${totalCards}</div>
+            <div class="stat-label">كارت</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">${drawnCards}</div>
+            <div class="stat-label">كارت مسحوب</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">${DB.challenges.length}</div>
+            <div class="stat-label">تحدي</div>
+          </div>
+        </div>
+        
+        <h3 style="margin:20px 0 10px">📊 إنجاز الواجبات</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${totalTasks ? (completedTasks/totalTasks*100) : 0}%"></div>
+        </div>
+        <p style="text-align:center; opacity:.8">${completedTasks} من ${totalTasks} واجب مكتمل (${totalTasks ? Math.round(completedTasks/totalTasks*100) : 0}%)</p>
+      </div>
+    `;
+  } else if (type === 'students') {
+    container.innerHTML = `
+      <div class="report-card">
+        <h2>🎓 تقرير الطلاب</h2>
+        ${DB.students.map(student => {
+          const progress = DB.studentProgress[student.name] || {};
+          const tasksCompleted = progress.tasksCompleted || 0;
+          const wins = progress.wins || 0;
+          const streak = progress.streak || 0;
+          const badges = (DB.badges[student.name] || []).length;
+          
+          return `
+            <div class="task-card">
+              <div class="task-header">
+                <div class="task-title">🎓 ${student.name}</div>
+                <div class="task-meta-item">🏫 ${student.className}</div>
+              </div>
+              <div class="quick-stats-grid">
+                <div class="quick-stat">
+                  <div class="quick-stat-value">${tasksCompleted}</div>
+                  <div class="quick-stat-label">واجبات منجزة</div>
+                </div>
+                <div class="quick-stat">
+                  <div class="quick-stat-value">${wins}</div>
+                  <div class="quick-stat-label">انتصارات</div>
+                </div>
+                <div class="quick-stat">
+                  <div class="quick-stat-value">${streak}</div>
+                  <div class="quick-stat-label">أيام متتالية</div>
+                </div>
+                <div class="quick-stat">
+                  <div class="quick-stat-value">${badges}</div>
+                  <div class="quick-stat-label">شارات</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else if (type === 'groups') {
+    const sortedGroups = [...DB.groups].sort((a, b) => (b.score || 0) - (a.score || 0));
+    container.innerHTML = `
+      <div class="report-card">
+        <h2>👥 تقرير المجموعات</h2>
+        ${sortedGroups.map((g, i) => {
+          const cls = DB.classes.find(c => c.id === g.classId);
+          const submissions = Object.values(DB.taskSubmissions).reduce((sum, taskSubs) => {
+            return sum + (taskSubs[g.id] ? 1 : 0);
+          }, 0);
+          
+          return `
+            <div class="task-card ${i === 0 ? 'completed' : ''}">
+              <div class="task-header">
+                <div class="task-title">${i === 0 ? '👑' : `#${i+1}`} ${g.name}</div>
+                <div class="task-status status-graded">${g.score || 0} نقطة</div>
+              </div>
+              <div class="task-meta">
+                <div class="task-meta-item">🏫 ${cls ? cls.name : '-'}</div>
+                <div class="task-meta-item">🔢 رقم ${g.groupNumber}</div>
+                <div class="task-meta-item">📝 ${submissions} تسليم</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else if (type === 'tasks') {
+    container.innerHTML = `
+      <div class="report-card">
+        <h2>📝 تقرير الواجبات</h2>
+        ${DB.tasks.map(task => {
+          const submissions = DB.taskSubmissions[task.id] || {};
+          const totalGroups = DB.groups.filter(g => g.classId === task.classId).length;
+          const percentage = totalGroups ? Math.round(Object.keys(submissions).length / totalGroups * 100) : 0;
+          
+          return `
+            <div class="task-card">
+              <div class="task-header">
+                <div class="task-title">${task.title}</div>
+                <div class="task-status status-submitted">${percentage}%</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${percentage}%"></div>
+              </div>
+              <div class="task-meta">
+                <div class="task-meta-item">📊 ${Object.keys(submissions).length}/${totalGroups}</div>
+                <div class="task-meta-item">💎 ${task.individualPoints}+${task.teamPoints}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+}
+
+function exportReport() {
+  toast('📥 جاري تحضير التقرير...');
+  setTimeout(() => {
+    const reportText = generateTextReport();
+    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `report-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('✅ تم تصدير التقرير');
+  }, 500);
+}
+
+function generateTextReport() {
+  let report = '📊 تقرير شامل - لعبة الضاد\n';
+  report += `📅 التاريخ: ${new Date().toLocaleString('ar-EG')}\n\n`;
+  
+  report += '👥 إحصائيات عامة:\n';
+  report += `- عدد الطلاب: ${DB.students.length}\n`;
+  report += `- عدد المجموعات: ${DB.groups.length}\n`;
+  report += `- عدد الواجبات: ${DB.tasks.length}\n`;
+  report += `- إجمالي النقاط: ${DB.groups.reduce((s, g) => s + (g.score || 0), 0)}\n\n`;
+  
+  report += '🏆 ترتيب المجموعات:\n';
+  [...DB.groups].sort((a, b) => (b.score || 0) - (a.score || 0)).forEach((g, i) => {
+    report += `${i+1}. ${g.name} - ${g.score || 0} نقطة\n`;
+  });
+  
+  return report;
+}
+
+// ==================== بقية الكود الأصلي (مع الحفاظ على كل الوظائف) ====================
+
 async function loadData() {
   try {
     const response = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY } });
@@ -750,6 +2400,15 @@ async function loadData() {
       if (!DB.lessons) DB.lessons = [];
       if (!DB.students) DB.students = [];
       if (!DB.teachers) DB.teachers = [];
+      // تهيئة البيانات الجديدة
+      if (!DB.tasks) DB.tasks = [];
+      if (!DB.taskSubmissions) DB.taskSubmissions = {};
+      if (!DB.drawnCards) DB.drawnCards = [];
+      if (!DB.challenges) DB.challenges = [];
+      if (!DB.badges) DB.badges = {};
+      if (!DB.comments) DB.comments = {};
+      if (!DB.studentProgress) DB.studentProgress = {};
+      if (!DB.notifications) DB.notifications = [];
       
       // إجبار تحديث كلمة مرور المدرس الأساسي
       let mainT = DB.teachers.find(t => t.user === 'ahmed');
@@ -814,18 +2473,363 @@ async function initApp() {
         if (currentUser.role === 'teacher') {
           renderTeacherStats(); renderGroups(); renderClasses(); renderCards(); renderQuestions();
           renderLog(); renderLeaderboard(window.teacherLBType || 'school'); renderLessons(); renderStudents();
-          renderSidebar(); updateClassFilters();
+          renderSidebar(); updateClassFilters(); renderTasks(currentTasksFilter); renderChallenges();
+          updateTaskBadges(); updateCardStats();
         } else if (currentUser.role === 'leader') {
-          loadLeader(); renderLeaderCard(); renderLeaderLessons();
+          loadLeader(); renderLeaderCard(); renderLeaderLessons(); renderLeaderTasks();
+          renderBadges('leaderBadgesList', currentUser.name);
         } else if (currentUser.role === 'student') {
           renderStudentLeaderboard(window.studentLBType || 'school');
-          renderStudentLessons();
+          renderStudentLessons(); renderStudentTasks();
+          renderBadges('studentBadgesList', currentUser.name);
+          renderStudentReport();
         }
+        checkAndAwardBadges();
       }
     }, 3000);
   } else {
     toast('❌ فشل الاتصال بقاعدة البيانات', 'err');
   }
+}
+
+function renderLeaderTasks() {
+  const list = document.getElementById('leaderTasksList');
+  if (!list || !currentUser?.groupId) return;
+  
+  const group = DB.groups.find(g => g.id === currentUser.groupId);
+  if (!group) return;
+  
+  const tasks = DB.tasks.filter(t => t.classId === group.classId);
+  
+  if (!tasks.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>لا توجد واجبات لفريقك</p></div>';
+    return;
+  }
+  
+  list.innerHTML = tasks.map(task => {
+    const submission = DB.taskSubmissions[task.id]?.[currentUser.groupId];
+    const overdue = isTaskOverdue(task);
+    const deadlineDate = new Date(task.deadline);
+    const hoursLeft = Math.max(0, Math.ceil((deadlineDate - new Date()) / (1000 * 60 * 60)));
+    const isUrgent = hoursLeft <= 24 && hoursLeft > 0 && !overdue && !submission;
+    
+    return `
+      <div class="task-card ${overdue && !submission ? 'overdue' : ''} ${submission ? 'completed' : ''}">
+        <div class="task-header">
+          <div class="task-title">${task.title}</div>
+          <div class="task-status ${submission ? 'status-submitted' : overdue ? 'status-overdue' : 'status-pending'}">
+            ${submission ? (submission.graded ? '✅ تم التقييم' : '⏳ قيد التقييم') : overdue ? '⚠️ متأخر' : '⏳ مطلوب'}
+          </div>
+        </div>
+        <div class="task-description">${task.description}</div>
+        <div class="task-deadline ${isUrgent ? 'urgent' : ''}">
+          📅 ${deadlineDate.toLocaleString('ar-EG')}
+          ${isUrgent ? `<span class="countdown-timer">⏰ متبقي ${hoursLeft} ساعة</span>` : ''}
+        </div>
+        <div class="task-points-row">
+          <div class="task-points-box individual">
+            <div class="task-points-label">💎 فردي</div>
+            <div class="task-points-value plus">+${task.individualPoints}</div>
+          </div>
+          <div class="task-points-box team">
+            <div class="task-points-label">👥 جماعي</div>
+            <div class="task-points-value plus">+${task.teamPoints}</div>
+          </div>
+        </div>
+        ${task.fileName ? `<a href="${task.fileData}" download="${task.fileName}" class="btn btn-sm btn-info">📥 تحميل ملف الواجب</a>` : ''}
+        ${!submission ? `
+          <div class="task-actions">
+            <button class="btn btn-success" onclick="submitLeaderTask(${task.id})">📤 تسليم الواجب</button>
+          </div>
+        ` : `
+          <div style="padding:10px; background:rgba(6,167,125,.2); border-radius:10px; margin-top:10px">
+            ✅ تم التسليم بواسطة: ${submission.submittedBy}
+          </div>
+        `}
+      </div>
+    `;
+  }).join('');
+}
+
+function submitLeaderTask(taskId) {
+  const task = DB.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  
+  const group = DB.groups.find(g => g.id === currentUser.groupId);
+  if (!group) return;
+  
+  // جلب أعضاء الفريق من نفس الفصل
+  const teamMembers = DB.students.filter(s => s.className === (DB.classes.find(c => c.id === group.classId)?.name || ''));
+  
+  showModal(`
+    <h2>📤 تسليم واجب: ${task.title}</h2>
+    <p style="opacity:.8">👑 بصفتك القائد، اجمع الواجبات من أعضاء فريقك وارفعها هنا</p>
+    
+    <div style="margin:15px 0">
+      <h4>👥 أعضاء الفريق:</h4>
+      <div class="members-list" id="teamMembersList">
+        ${teamMembers.map(m => `
+          <label class="member-chip">
+            <input type="checkbox" value="${escapeHtml(m.name)}" checked>
+            ${escapeHtml(m.name)}
+          </label>
+        `).join('')}
+      </div>
+    </div>
+    
+    <label>📎 ملف الواجب:</label>
+    <input type="file" id="leaderTaskFile" accept=".pdf,.doc,.docx,.jpg,.png,.mp4,.zip">
+    
+    <label>📝 ملاحظات (اختياري):</label>
+    <textarea id="leaderTaskNotes" rows="3" placeholder="أي ملاحظات للمدرس..."></textarea>
+    
+    <div class="flex-center" style="margin-top:15px">
+      <button class="btn btn-success" onclick="confirmLeaderTaskSubmission(${taskId})">✅ تسليم</button>
+      <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
+    </div>
+  `);
+}
+
+async function confirmLeaderTaskSubmission(taskId) {
+  const fileInput = document.getElementById('leaderTaskFile');
+  const notes = document.getElementById('leaderTaskNotes').value.trim();
+  const memberCheckboxes = document.querySelectorAll('#teamMembersList input[type="checkbox"]:checked');
+  const members = Array.from(memberCheckboxes).map(cb => cb.value);
+  
+  let fileData = null;
+  let fileName = null;
+  if (fileInput.files[0]) {
+    const file = fileInput.files[0];
+    fileName = file.name;
+    fileData = await fileToBase64(file);
+  }
+  
+  if (!DB.taskSubmissions[taskId]) DB.taskSubmissions[taskId] = {};
+  
+  DB.taskSubmissions[taskId][currentUser.groupId] = {
+    submittedBy: currentUser.name,
+    members,
+    fileData,
+    fileName,
+    notes: escapeHtml(notes),
+    submittedAt: Date.now(),
+    graded: false
+  };
+  
+  // تحديث تقدم الطلاب
+  members.forEach(memberName => {
+    if (!DB.studentProgress[memberName]) DB.studentProgress[memberName] = {};
+    DB.studentProgress[memberName].tasksCompleted = (DB.studentProgress[memberName].tasksCompleted || 0) + 1;
+  });
+  
+  addLog('task-submit', `📝 ${currentUser.name} سلّم واجب للفريق`);
+  await save();
+  
+  closeModal();
+  toast('✅ تم تسليم الواجب بنجاح!');
+  showNotification('تم التسليم', 'تم تسليم الواجب للمدرس', 'success');
+  renderLeaderTasks();
+}
+
+function renderStudentTasks() {
+  const list = document.getElementById('studentTasksList');
+  if (!list || !currentUser?.className) return;
+  
+  const studentClass = DB.classes.find(c => c.name === currentUser.className);
+  if (!studentClass) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>لا توجد واجبات</p></div>';
+    return;
+  }
+  
+  const tasks = DB.tasks.filter(t => t.classId === studentClass.id);
+  
+  if (!tasks.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>لا توجد واجبات مطلوبة منك</p></div>';
+    return;
+  }
+  
+  list.innerHTML = tasks.map(task => {
+    const group = DB.groups.find(g => g.classId === studentClass.id);
+    const submission = group ? DB.taskSubmissions[task.id]?.[group.id] : null;
+    const overdue = isTaskOverdue(task);
+    const deadlineDate = new Date(task.deadline);
+    const hoursLeft = Math.max(0, Math.ceil((deadlineDate - new Date()) / (1000 * 60 * 60)));
+    const isUrgent = hoursLeft <= 24 && hoursLeft > 0 && !overdue && !submission;
+    const isMyTask = submission?.members?.includes(currentUser.name);
+    
+    return `
+      <div class="task-card ${overdue && !submission ? 'overdue' : ''} ${submission ? 'completed' : ''}">
+        <div class="task-header">
+          <div class="task-title">${task.title}</div>
+          <div class="task-status ${submission ? 'status-submitted' : overdue ? 'status-overdue' : 'status-pending'}">
+            ${submission ? (isMyTask ? '✅ تم التسليم' : '👥 الفريق سلّم') : overdue ? '⚠️ متأخر' : '⏳ مطلوب'}
+          </div>
+        </div>
+        <div class="task-description">${task.description}</div>
+        <div class="task-deadline ${isUrgent ? 'urgent' : ''}">
+          📅 ${deadlineDate.toLocaleString('ar-EG')}
+          ${isUrgent ? `<span class="countdown-timer">⏰ متبقي ${hoursLeft} ساعة</span>` : ''}
+        </div>
+        <div class="task-points-row">
+          <div class="task-points-box individual">
+            <div class="task-points-label">💎 نقاطي</div>
+            <div class="task-points-value plus">+${task.individualPoints}</div>
+          </div>
+          <div class="task-points-box team">
+            <div class="task-points-label">👥 نقاط الفريق</div>
+            <div class="task-points-value plus">+${task.teamPoints}</div>
+          </div>
+        </div>
+        ${task.fileName ? `<a href="${task.fileData}" download="${task.fileName}" class="btn btn-sm btn-info">📥 تحميل ملف الواجب</a>` : ''}
+        ${!submission ? `
+          <div class="task-submission">
+            <h3>📤 سلّم واجبك للقائد</h3>
+            <p style="opacity:.8">ارفع ملف الواجب وسيسلمه القائد للمدرس</p>
+            <button class="btn btn-success" onclick="submitStudentTask(${task.id})">📤 تسليم للقائد</button>
+          </div>
+        ` : `
+          <div style="padding:10px; background:rgba(6,167,125,.2); border-radius:10px; margin-top:10px">
+            ✅ ${isMyTask ? 'تم تسليم واجبك' : 'فريقك سلّم الواجب'}
+          </div>
+        `}
+      </div>
+    `;
+  }).join('');
+}
+
+function submitStudentTask(taskId) {
+  showModal(`
+    <h2>📤 تسليم واجب للقائد</h2>
+    <p style="opacity:.8">ارفع ملف الواجب وسيتم إرساله للقائد ليقوم بتسليمه للمدرس نيابة عن الفريق</p>
+    
+    <label>📎 ملف الواجب:</label>
+    <input type="file" id="studentTaskFile" accept=".pdf,.doc,.docx,.jpg,.png,.mp4,.zip">
+    
+    <label>📝 ملاحظات للقائد (اختياري):</label>
+    <textarea id="studentTaskNotes" rows="3" placeholder="أي ملاحظات للقائد..."></textarea>
+    
+    <div class="flex-center" style="margin-top:15px">
+      <button class="btn btn-success" onclick="confirmStudentTaskSubmission(${taskId})">✅ تسليم للقائد</button>
+      <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
+    </div>
+  `);
+}
+
+async function confirmStudentTaskSubmission(taskId) {
+  const fileInput = document.getElementById('studentTaskFile');
+  const notes = document.getElementById('studentTaskNotes').value.trim();
+  
+  if (!fileInput.files[0]) return toast('❌ ارفع ملف الواجب', 'err');
+  
+  const file = fileInput.files[0];
+  const fileData = await fileToBase64(file);
+  
+  // إرسال للقائد (إشعار)
+  const studentClass = DB.classes.find(c => c.name === currentUser.className);
+  const group = DB.groups.find(g => g.classId === studentClass?.id);
+  
+  if (!group) return toast('❌ لا يوجد فريق مرتبط', 'err');
+  
+  // إضافة للتسليم (كجزء من فريق)
+  if (!DB.taskSubmissions[taskId]) DB.taskSubmissions[taskId] = {};
+  if (!DB.taskSubmissions[taskId][group.id]) {
+    DB.taskSubmissions[taskId][group.id] = {
+      submittedBy: 'قيد التجميع',
+      members: [],
+      individualFiles: [],
+      submittedAt: Date.now(),
+      graded: false
+    };
+  }
+  
+  DB.taskSubmissions[taskId][group.id].individualFiles = DB.taskSubmissions[taskId][group.id].individualFiles || [];
+  DB.taskSubmissions[taskId][group.id].individualFiles.push({
+    studentName: currentUser.name,
+    fileData,
+    fileName: file.name,
+    notes: escapeHtml(notes),
+    submittedAt: Date.now()
+  });
+  
+  if (!DB.taskSubmissions[taskId][group.id].members.includes(currentUser.name)) {
+    DB.taskSubmissions[taskId][group.id].members.push(currentUser.name);
+  }
+  
+  // تحديث تقدم الطالب
+  if (!DB.studentProgress[currentUser.name]) DB.studentProgress[currentUser.name] = {};
+  DB.studentProgress[currentUser.name].tasksCompleted = (DB.studentProgress[currentUser.name].tasksCompleted || 0) + 1;
+  
+  await save();
+  
+  closeModal();
+  toast('✅ تم تسليم الواجب للقائد!');
+  showNotification('تم التسليم', 'تم تسليم واجبك للقائد', 'success');
+  renderStudentTasks();
+}
+
+function renderStudentReport() {
+  const container = document.getElementById('studentReportContent');
+  if (!container || !currentUser) return;
+  
+  const progress = DB.studentProgress[currentUser.name] || {};
+  const badges = DB.badges[currentUser.name] || [];
+  const tasksCompleted = progress.tasksCompleted || 0;
+  const wins = progress.wins || 0;
+  const streak = progress.streak || 0;
+  
+  // حساب ترتيب الطالب
+  const studentClass = DB.classes.find(c => c.name === currentUser.className);
+  const groupsInClass = studentClass ? DB.groups.filter(g => g.classId === studentClass.id) : [];
+  const sortedGroups = [...groupsInClass].sort((a, b) => (b.score || 0) - (a.score || 0));
+  
+  container.innerHTML = `
+    <div class="report-card">
+      <div class="report-header">
+        <h2>📊 تقريري الشخصي</h2>
+        <div class="report-student-name">🎓 ${currentUser.name}</div>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-icon">📝</div>
+          <div class="stat-value">${tasksCompleted}</div>
+          <div class="stat-label">واجبات منجزة</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-value">${wins}</div>
+          <div class="stat-label">انتصارات</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-value">${streak}</div>
+          <div class="stat-label">أيام متتالية</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon">🏅</div>
+          <div class="stat-value">${badges.length}</div>
+          <div class="stat-label">شارات</div>
+        </div>
+      </div>
+      
+      <h3 style="margin:20px 0 10px">🎯 الأهداف القادمة</h3>
+      <div class="task-card">
+        <div class="task-title">📝 إنجاز 10 واجبات</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${Math.min(100, tasksCompleted * 10)}%"></div>
+        </div>
+        <p style="text-align:center; opacity:.8">${tasksCompleted}/10 واجبات</p>
+      </div>
+      
+      <div class="task-card">
+        <div class="task-title">🔥 سلسلة 7 أيام</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${Math.min(100, streak * 14)}%"></div>
+        </div>
+        <p style="text-align:center; opacity:.8">${streak}/7 أيام</p>
+      </div>
+    </div>
+  `;
 }
 
 function showFileUpload() {
@@ -842,9 +2846,6 @@ function showFileUpload() {
       <div class="card" style="text-align:center; cursor:pointer; padding:20px" onclick="triggerFileInput('.pdf')">
         <div style="font-size:3em; margin-bottom:10px">📄</div><h3>PDF</h3><p style="font-size:.85em; opacity:.7">مستندات PDF</p>
       </div>
-    </div>
-    <div style="margin-top:20px; padding:15px; background:rgba(255,214,10,.1); border-radius:10px; border:1px solid rgba(255,214,10,.3)">
-      <p style="font-size:.9em; opacity:.8">💡 <strong>لعرض PowerPoint بشكل كامل:</strong><br>استخدم زر "🔗 عرض من رابط" وارفع الملف على Google Drive أو OneDrive</p>
     </div>
     <input type="file" id="fileInput" style="display:none" onchange="handleLocalFile(event)">
     <div class="flex-center" style="margin-top:20px"><button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button></div>
@@ -880,16 +2881,8 @@ function handleLocalFile(event) {
 function showLinkInput() {
   showModal(`
     <h2>🔗 عرض من رابط</h2>
-    <p style="margin-bottom:15px; opacity:.8">ارفع الملف على Google Drive أو OneDrive، شاركه كـ "أي شخص لديه الرابط"، ثم الصق الرابط هنا</p>
     <label>📎 رابط الملف:</label>
     <input type="text" id="presentationLink" placeholder="https://drive.google.com/... أو https://1drv.ms/...">
-    <div style="margin-top:15px; padding:15px; background:rgba(255,214,10,.1); border-radius:10px; border:1px solid rgba(255,214,10,.3)">
-      <h3 style="font-size:1em; margin-bottom:10px">💡 كيفية الحصول على الرابط:</h3>
-      <p style="font-size:.9em; opacity:.8; line-height:1.6">
-        <strong>Google Drive:</strong> ارفع الملف → كليك يمين "مشاركة" → "أي شخص لديه الرابط" → انسخ الرابط.<br>
-        <strong>OneDrive:</strong> ارفع الملف → "مشاركة" → "أي شخص لديه الرابط" → انسخ الرابط.
-      </p>
-    </div>
     <div class="flex-center" style="margin-top:20px">
       <button class="btn btn-success" onclick="loadFromLink()">🚀 عرض</button>
       <button class="btn btn-secondary" onclick="closeModal()">❌ إلغاء</button>
@@ -939,9 +2932,10 @@ function resetModalDraw() {
 function renderModalDrawWheel() {
   const wheel = document.getElementById('modalDrawWheel');
   if (!wheel) return;
-  if (!DB.cards.length) { wheel.style.background = '#666'; return; }
+  const availableCards = DB.cards.filter(c => !DB.drawnCards.includes(c.id));
+  if (!availableCards.length) { wheel.style.background = '#666'; return; }
   const colors = ['#e63946','#06a77d','#ffd60a','#457b9d','#f77f00','#8338ec','#fb5607','#3a86ff','#ff006e','#80ed99'];
-  const n = DB.cards.length;
+  const n = availableCards.length;
   let grad = 'conic-gradient(';
   for (let i = 0; i < n; i++) {
     const start = (i * 360 / n);
@@ -954,17 +2948,22 @@ function renderModalDrawWheel() {
 }
 
 function spinModalDrawWheel() {
-  if (!DB.cards.length) return toast('❌ أضف كروت أولاً', 'err');
+  const availableCards = DB.cards.filter(c => !DB.drawnCards.includes(c.id));
+  if (!availableCards.length) return toast('❌ كل الكروت تم سحبها!', 'err');
   if (!DB.groups.length) return toast('❌ لا توجد مجموعات', 'err');
   const wheel = document.getElementById('modalDrawWheel');
-  const idx = Math.floor(Math.random() * DB.cards.length);
-  const n = DB.cards.length;
+  const idx = Math.floor(Math.random() * availableCards.length);
+  const n = availableCards.length;
   const segAngle = 360 / n;
   const targetAngle = 360*6 + (360 - (idx * segAngle + segAngle/2));
   wheel.style.transition = 'transform 5s cubic-bezier(.17,.67,.21,.99)';
   wheel.style.transform = `rotate(${targetAngle}deg)`;
   setTimeout(() => {
-    modalDraw.card = DB.cards[idx];
+    modalDraw.card = availableCards[idx];
+    if (!DB.drawnCards.includes(modalDraw.card.id)) {
+      DB.drawnCards.push(modalDraw.card.id);
+      save();
+    }
     showModalDrawStep2();
   }, 5100);
 }
@@ -992,8 +2991,8 @@ async function sendModalCardToGroup() {
   document.getElementById('modalSentGroupName').innerText = modalDraw.group.name;
   toast(`✅ تم إرسال الكارت لـ ${modalDraw.group.name}`);
 }
-// =====================================================
 
+// ========== بقية الدوال الأصلية ==========
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1117,6 +3116,8 @@ function loadTeacher() {
   renderCards(); renderDrawWheel(); updatePointsView(); renderLog();
   renderLeaderboard('school'); updateClassFilters(); renderLessons();
   renderStudents(); renderSidebar(); renderThemeGrid();
+  renderTasks('all'); renderChallenges(); renderReports('overview');
+  updateTaskBadges(); updateCardStats();
 }
 
 function switchTab(name, e) {
@@ -1133,6 +3134,10 @@ function switchTab(name, e) {
   if (name === 'students') renderStudents();
   if (name === 'home') renderSidebar();
   if (name === 'settings') renderThemeGrid();
+  if (name === 'tasks') { renderTasks(currentTasksFilter); updateClassFilters(); }
+  if (name === 'cards') { renderCards(); updateCardStats(); }
+  if (name === 'challenges') { renderChallenges(); updateClassFilters(); }
+  if (name === 'reports') renderReports('overview');
 }
 
 function renderTeacherStats() {
@@ -1141,7 +3146,7 @@ function renderTeacherStats() {
     <div class="stat-box"><div class="stat-icon">🏫</div><div class="stat-value">${DB.classes.length}</div><div class="stat-label">الفصول</div></div>
     <div class="stat-box"><div class="stat-icon">👥</div><div class="stat-value">${DB.groups.length}</div><div class="stat-label">المجموعات</div></div>
     <div class="stat-box"><div class="stat-icon">🎓</div><div class="stat-value">${DB.students.length}</div><div class="stat-label">الطلاب</div></div>
-    <div class="stat-box"><div class="stat-icon">📚</div><div class="stat-value">${DB.lessons.length}</div><div class="stat-label">الدروس</div></div>
+    <div class="stat-box"><div class="stat-icon">📝</div><div class="stat-value">${DB.tasks.length}</div><div class="stat-label">الواجبات</div></div>
     <div class="stat-box"><div class="stat-icon">💎</div><div class="stat-value">${totalScore}</div><div class="stat-label">إجمالي النقاط</div></div>
   `;
 }
@@ -1197,6 +3202,10 @@ function updateClassFilters() {
   if (sf) { const curSf = sf.value; sf.innerHTML = '<option value="">📚 اختر الفصل</option>' + opts; sf.value = curSf; }
   const lc = document.getElementById('lessonClass');
   if (lc) lc.innerHTML = '<option value="">🏫 اختر الفصل</option>' + opts;
+  const tc = document.getElementById('taskClass');
+  if (tc) tc.innerHTML = '<option value="">🏫 اختر الفصل</option>' + opts;
+  const cc = document.getElementById('challengeClass');
+  if (cc) cc.innerHTML = '<option value="">🏫 لكل المدرسة</option>' + opts;
 }
 
 function showAddGroupModal() {
@@ -1316,96 +3325,39 @@ async function addCard() {
   document.getElementById('cardDesc').value = '';
   document.getElementById('cardPoints').value = '';
   toast('✅ تم إضافة الكارت');
+  updateCardStats();
 }
 
 function renderCards() {
   const list = document.getElementById('cardsList');
   if (!DB.cards.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">🎴</div><p>لا توجد كروت</p></div>';
+    updateCardStats();
     return;
   }
   const typeIcons = {question:'❓', bonus:'🎁', challenge:'⚔️', trap:'⚠️', special:'✨'};
   const typeNames = {question:'سؤال', bonus:'بونص', challenge:'تحدي', trap:'فخ', special:'خاص'};
-  list.innerHTML = DB.cards.map(c => `<div class="question-item">
-    <div class="q-text">${typeIcons[c.type]||'🎴'} ${c.title}</div>
-    <div style="opacity:.9; margin:8px 0">${c.desc || '(بدون شرح)'}</div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap">
-      <span class="badge badge-info">${typeNames[c.type]||'كارت'}</span>
-      ${c.points ? `<span class="badge badge-warning">💎 ${c.points}</span>` : ''}
-    </div>
-    <button class="btn btn-danger btn-sm" onclick="deleteCard(${c.id})" style="float:left">🗑️</button>
-  </div>`).join('');
+  list.innerHTML = DB.cards.map(c => {
+    const isDrawn = DB.drawnCards.includes(c.id);
+    return `<div class="question-item" style="${isDrawn ? 'opacity:.5;' : ''}">
+      <div class="q-text">${typeIcons[c.type]||'🎴'} ${c.title} ${isDrawn ? '<span class="badge badge-warning">🎯 مسحوب</span>' : ''}</div>
+      <div style="opacity:.9; margin:8px 0">${c.desc || '(بدون شرح)'}</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <span class="badge badge-info">${typeNames[c.type]||'كارت'}</span>
+        ${c.points ? `<span class="badge badge-warning">💎 ${c.points}</span>` : ''}
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteCard(${c.id})" style="float:left">🗑️</button>
+    </div>`;
+  }).join('');
+  updateCardStats();
 }
 
 async function deleteCard(id) {
   if (!confirm('⚠️ حذف الكارت؟')) return;
   DB.cards = DB.cards.filter(c => c.id !== id);
+  DB.drawnCards = DB.drawnCards.filter(d => d !== id);
   await save();
-}
-
-function renderDrawWheel() {
-  const wheel = document.getElementById('drawWheel');
-  if (!wheel) return;
-  if (!DB.cards.length) { wheel.style.background = '#666'; return; }
-  const colors = ['#e63946','#06a77d','#ffd60a','#457b9d','#f77f00','#8338ec','#fb5607','#3a86ff','#ff006e','#80ed99'];
-  const n = DB.cards.length;
-  let grad = 'conic-gradient(';
-  for (let i = 0; i < n; i++) {
-    const start = (i * 360 / n);
-    const end = ((i+1) * 360 / n);
-    grad += `${colors[i % colors.length]} ${start}deg ${end}deg${i<n-1?',':''}`;
-  }
-  grad += ')';
-  wheel.style.background = grad;
-  wheel.style.transform = 'rotate(0deg)';
-}
-
-function resetDraw() {
-  currentDraw = { card:null, group:null };
-  document.getElementById('drawStep1').style.display = 'block';
-  document.getElementById('drawStep2').style.display = 'none';
-  document.getElementById('drawStep3').style.display = 'none';
-  renderDrawWheel();
-}
-
-function spinDrawWheel() {
-  if (!DB.cards.length) return toast('❌ أضف كروت أولاً', 'err');
-  if (!DB.groups.length) return toast('❌ لا توجد مجموعات', 'err');
-  const wheel = document.getElementById('drawWheel');
-  const idx = Math.floor(Math.random() * DB.cards.length);
-  const n = DB.cards.length;
-  const segAngle = 360 / n;
-  const targetAngle = 360*6 + (360 - (idx * segAngle + segAngle/2));
-  wheel.style.transition = 'transform 5s cubic-bezier(.17,.67,.21,.99)';
-  wheel.style.transform = `rotate(${targetAngle}deg)`;
-  setTimeout(() => {
-    currentDraw.card = DB.cards[idx];
-    showDrawStep2();
-  }, 5100);
-}
-
-function showDrawStep2() {
-  document.getElementById('drawStep1').style.display = 'none';
-  document.getElementById('drawStep2').style.display = 'block';
-  const typeIcons = {question:'❓ سؤال', bonus:'🎁 بونص', challenge:'⚔️ تحدي', trap:'⚠️ فخ', special:'✨ خاص'};
-  document.getElementById('pendingType').innerText = typeIcons[currentDraw.card.type] || '🎴 كارت';
-  const sel = document.getElementById('drawGroupSelect');
-  sel.innerHTML = DB.groups.map(g => {
-    const cls = DB.classes.find(c => c.id === g.classId);
-    return `<option value="${g.id}">${escapeHtml(g.name)} - ${cls?escapeHtml(cls.name):''} (رقم ${g.groupNumber})</option>`;
-  }).join('');
-}
-
-async function sendCardToGroup() {
-  const gid = parseInt(document.getElementById('drawGroupSelect').value);
-  currentDraw.group = DB.groups.find(g => g.id === gid);
-  DB.pendingCards[currentDraw.group.id] = { id: Date.now(), card: currentDraw.card, groupId: currentDraw.group.id, groupName: currentDraw.group.name, timestamp: Date.now(), viewed: false };
-  addLog('card-draw', `📤 تم إرسال كارت "${currentDraw.card.title}" لـ ${currentDraw.group.name}`);
-  await save();
-  document.getElementById('drawStep2').style.display = 'none';
-  document.getElementById('drawStep3').style.display = 'block';
-  document.getElementById('sentGroupName').innerText = currentDraw.group.name;
-  toast(`✅ تم إرسال الكارت لـ ${currentDraw.group.name}`);
+  updateCardStats();
 }
 
 function updatePointsView() {
@@ -1461,7 +3413,7 @@ function renderLog() {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><p>السجل فارغ</p></div>';
     return;
   }
-  const icons = {'points-plus':'➕', 'points-minus':'➖', 'card-draw':'🎴'};
+  const icons = {'points-plus':'➕', 'points-minus':'➖', 'card-draw':'🎴', 'task-submit':'📝', 'task-created':'📋', 'badge-earned':'🏅', 'challenge-won':'🏆'};
   list.innerHTML = log.map(l => `<div class="log-item ${l.type}">
     <div class="log-icon">${icons[l.type] || '📝'}</div>
     <div class="log-content">${escapeHtml(l.message)}</div>
@@ -1535,8 +3487,12 @@ function switchLeaderTab(name, e) {
   document.getElementById('leaderTab-card').style.display = name === 'card' ? 'block' : 'none';
   document.getElementById('leaderTab-info').style.display = name === 'info' ? 'block' : 'none';
   document.getElementById('leaderTab-lessons').style.display = name === 'lessons' ? 'block' : 'none';
+  document.getElementById('leaderTab-tasks').style.display = name === 'tasks' ? 'block' : 'none';
+  document.getElementById('leaderTab-badges').style.display = name === 'badges' ? 'block' : 'none';
   if (name === 'info') loadLeader();
   if (name === 'lessons') renderLeaderLessons();
+  if (name === 'tasks') renderLeaderTasks();
+  if (name === 'badges') renderBadges('leaderBadgesList', currentUser.name);
 }
 
 function renderLeaderCard() {
@@ -1643,7 +3599,13 @@ function switchStudentTab(name, e) {
   e.currentTarget.classList.add('active');
   document.getElementById('studentTab-ranking').style.display = name === 'ranking' ? 'block' : 'none';
   document.getElementById('studentTab-lessons').style.display = name === 'lessons' ? 'block' : 'none';
+  document.getElementById('studentTab-tasks').style.display = name === 'tasks' ? 'block' : 'none';
+  document.getElementById('studentTab-badges').style.display = name === 'badges' ? 'block' : 'none';
+  document.getElementById('studentTab-report').style.display = name === 'report' ? 'block' : 'none';
   if (name === 'lessons') renderStudentLessons();
+  if (name === 'tasks') renderStudentTasks();
+  if (name === 'badges') renderBadges('studentBadgesList', currentUser.name);
+  if (name === 'report') renderStudentReport();
 }
 
 function renderStudentLeaderboard(type) {
