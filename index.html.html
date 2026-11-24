@@ -866,9 +866,23 @@ input:focus,textarea:focus,select:focus { outline:none; border-color:var(--accen
 </div>
 <div class="notification-panel" id="notificationPanel"></div>
 <script>
-// إعدادات JSONBin
-const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6ace8aefffd5d16053687dff';
-const JSONBIN_KEY = '$2a$10$JKB7nuxHsyJ8KLe0S8vIDOLSfE82MQ1JiWi/IRZxsiPq8ToTq2xFm';
+// ⚙️ إعدادات Supabase - غيّر القيم دي باللي عندك
+const SUPABASE_URL = 'https://gpeyiqcxwvykewyhybfu.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZXlpcWN4d3Z5a2V3eWh5YmZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1NTE4NTMsImV4cCI6MjExMTEyNzg1M30.nJeoqFvQCVJ_DTgU5hd_Z_yHfQbluvLgLyv-q0ISzeo';
+
+// دالة مساعدة للاتصال بـ Supabase
+async function supabaseRequest(endpoint, options = {}) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            ...(options.headers || {})
+        }
+    });
+    return response;
+}
 // ==================== قاعدة البيانات الأساسية ====================
 let DB = {
 classes: [],
@@ -901,36 +915,86 @@ window.studentLBType = 'school';
 window.teacherLBType = 'school';
 let currentTasksFilter = 'all';
 
-// ==================== 🆕 نظام حفظ الجلسة ====================
-function saveUserSession() {
-  if (currentUser) {
-    localStorage.setItem('userSession', JSON.stringify(currentUser));
-    console.log('✅ تم حفظ الجلسة');
-  }
+// ==================== 🆕 نظام حفظ الجلسة (متزامن مع كل الأجهزة) ====================
+function getSessionKey() {
+    if (currentUser) {
+        return `${currentUser.role}_${currentUser.name}`;
+    }
+    return null;
 }
 
-function loadUserSession() {
-  const sessionStr = localStorage.getItem('userSession');
-  if (sessionStr) {
-    try {
-      const session = JSON.parse(sessionStr);
-      // التحقق من صلاحية الجلسة
-      if (session && session.role && session.name) {
-        currentUser = session;
-        console.log('✅ تم استعادة الجلسة:', session);
-        return true;
-      }
-    } catch (err) {
-      console.error('❌ فشل تحميل الجلسة:', err);
-      localStorage.removeItem('userSession');
+async function saveUserSession() {
+    if (currentUser) {
+        // حفظ محلي سريع
+        localStorage.setItem('userSession', JSON.stringify(currentUser));
+        // حفظ في السحابة
+        const sessionKey = getSessionKey();
+        if (sessionKey) {
+            try {
+                await supabaseRequest('user_sessions?user_key=eq.' + encodeURIComponent(sessionKey), {
+                    method: 'DELETE'
+                });
+                await supabaseRequest('user_sessions', {
+                    method: 'POST',
+                    headers: { 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({
+                        user_key: sessionKey,
+                        user_data: currentUser,
+                        created_at: new Date().toISOString()
+                    })
+                });
+                console.log('✅ تم حفظ الجلسة في السحابة');
+            } catch (err) {
+                console.error('خطأ في حفظ الجلسة:', err);
+            }
+        }
     }
-  }
-  return false;
+}
+
+async function loadUserSession() {
+    // 1) جرّب من الجهاز الأول (أسرع)
+    const sessionStr = localStorage.getItem('userSession');
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            if (session && session.role && session.name) {
+                currentUser = session;
+                console.log('✅ تم استعادة الجلسة من الجهاز');
+                return true;
+            }
+        } catch (err) {
+            console.error('❌ فشل تحميل الجلسة:', err);
+            localStorage.removeItem('userSession');
+        }
+    }
+    // 2) مفيش محلي؟ جرّب من السحابة
+    try {
+        const response = await supabaseRequest('user_sessions?order=created_at.desc&limit=1');
+        const result = await response.json();
+        if (result && result[0] && result[0].user_data) {
+            const session = result[0].user_data;
+            if (session && session.role && session.name) {
+                currentUser = session;
+                localStorage.setItem('userSession', JSON.stringify(currentUser));
+                console.log('✅ تم استعادة الجلسة من السحابة');
+                return true;
+            }
+        }
+    } catch (err) {
+        console.error('خطأ في تحميل الجلسة من السحابة:', err);
+    }
+    return false;
 }
 
 function clearUserSession() {
-  localStorage.removeItem('userSession');
-  console.log('🗑️ تم مسح الجلسة');
+    localStorage.removeItem('userSession');
+    const sessionKey = getSessionKey();
+    if (sessionKey) {
+        supabaseRequest('user_sessions?user_key=eq.' + encodeURIComponent(sessionKey), {
+            method: 'DELETE'
+        }).catch(err => console.error('خطأ في مسح الجلسة:', err));
+    }
+    console.log('🗑️ تم مسح الجلسة');
 }
 // ==================== نهاية نظام حفظ الجلسة ====================
 
@@ -1818,77 +1882,77 @@ return report;
 }
 // ==================== تحميل وحفظ البيانات ====================
 async function loadData() {
-try {
-const response = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY } });
-const result = await response.json();
-if (result && result.record) {
-DB = result.record;
-if (!DB.pendingCards) DB.pendingCards = {};
-if (!DB.log) DB.log = [];
-if (!DB.classes) DB.classes = [];
-if (!DB.groups) DB.groups = [];
-if (!DB.questions) DB.questions = [];
-if (!DB.cards) DB.cards = [];
-if (!DB.lessons) DB.lessons = [];
-if (!DB.students) DB.students = [];
-if (!DB.teachers) DB.teachers = [];
-if (!DB.tasks) DB.tasks = [];
-if (!DB.taskSubmissions) DB.taskSubmissions = {};
-if (!DB.drawnCards) DB.drawnCards = [];
-if (!DB.challenges) DB.challenges = [];
-if (!DB.badges) DB.badges = {};
-if (!DB.comments) DB.comments = {};
-if (!DB.studentProgress) DB.studentProgress = {};
-if (!DB.notifications) DB.notifications = [];
-let mainT = DB.teachers.find(t => t.user === 'ahmed');
-if (!mainT) {
-DB.teachers.push({user:'ahmed', pass:'987@@'});
-save();
-} else if (mainT.pass !== '987@@') {
-mainT.pass = '987@@';
-save();
-}
-if (DB.theme) {
-if (typeof DB.theme === 'string' && THEMES[DB.theme]) {
-const theme = THEMES[DB.theme];
-const root = document.documentElement;
-root.style.setProperty('--primary', theme.colors.primary);
-root.style.setProperty('--primary-light', theme.colors.primaryLight);
-root.style.setProperty('--accent', theme.colors.accent);
-root.style.setProperty('--dark', theme.colors.dark);
-root.style.setProperty('--warning', theme.colors.warning);
-root.style.setProperty('--bg-gradient', `linear-gradient(135deg, ${theme.colors.dark} 0%, ${theme.colors.primary} 50%, ${theme.colors.primaryLight} 100%)`);
-} else if (typeof DB.theme === 'object' && DB.theme.colors) {
-const colors = DB.theme.colors;
-const root = document.documentElement;
-root.style.setProperty('--primary', colors.primary);
-root.style.setProperty('--primary-light', colors.primaryLight);
-root.style.setProperty('--accent', colors.accent);
-root.style.setProperty('--dark', colors.dark);
-root.style.setProperty('--warning', colors.warning);
-root.style.setProperty('--bg-gradient', `linear-gradient(135deg, ${colors.dark} 0%, ${colors.primary} 50%, ${colors.primaryLight} 100%)`);
-}
-}
-}
-return true;
-} catch (err) {
-console.error('Load error:', err);
-return false;
-}
+    try {
+        const response = await supabaseRequest('game_data?id=eq.1');
+        const result = await response.json();
+        if (result && result[0] && result[0].data) {
+            DB = result[0].data;
+            if (!DB.pendingCards) DB.pendingCards = {};
+            if (!DB.log) DB.log = [];
+            if (!DB.classes) DB.classes = [];
+            if (!DB.groups) DB.groups = [];
+            if (!DB.questions) DB.questions = [];
+            if (!DB.cards) DB.cards = [];
+            if (!DB.lessons) DB.lessons = [];
+            if (!DB.students) DB.students = [];
+            if (!DB.teachers) DB.teachers = [];
+            if (!DB.tasks) DB.tasks = [];
+            if (!DB.taskSubmissions) DB.taskSubmissions = {};
+            if (!DB.drawnCards) DB.drawnCards = [];
+            if (!DB.challenges) DB.challenges = [];
+            if (!DB.badges) DB.badges = {};
+            if (!DB.comments) DB.comments = {};
+            if (!DB.studentProgress) DB.studentProgress = {};
+            if (!DB.notifications) DB.notifications = [];
+            let mainT = DB.teachers.find(t => t.user === 'ahmed');
+            if (!mainT) {
+                DB.teachers.push({user:'ahmed', pass:'987@@'});
+                save();
+            } else if (mainT.pass !== '987@@') {
+                mainT.pass = '987@@';
+                save();
+            }
+            if (DB.theme) {
+                if (typeof DB.theme === 'string' && THEMES[DB.theme]) {
+                    const theme = THEMES[DB.theme];
+                    const root = document.documentElement;
+                    root.style.setProperty('--primary', theme.colors.primary);
+                    root.style.setProperty('--primary-light', theme.colors.primaryLight);
+                    root.style.setProperty('--accent', theme.colors.accent);
+                    root.style.setProperty('--dark', theme.colors.dark);
+                    root.style.setProperty('--warning', theme.colors.warning);
+                    root.style.setProperty('--bg-gradient', `linear-gradient(135deg, ${theme.colors.dark} 0%, ${theme.colors.primary} 50%, ${theme.colors.primaryLight} 100%)`);
+                } else if (typeof DB.theme === 'object' && DB.theme.colors) {
+                    const colors = DB.theme.colors;
+                    const root = document.documentElement;
+                    root.style.setProperty('--primary', colors.primary);
+                    root.style.setProperty('--primary-light', colors.primaryLight);
+                    root.style.setProperty('--accent', colors.accent);
+                    root.style.setProperty('--dark', colors.dark);
+                    root.style.setProperty('--warning', colors.warning);
+                    root.style.setProperty('--bg-gradient', `linear-gradient(135deg, ${colors.dark} 0%, ${colors.primary} 50%, ${colors.primaryLight} 100%)`);
+                }
+            }
+        }
+        return true;
+    } catch (err) {
+        console.error('Load error:', err);
+        return false;
+    }
 }
 async function save() {
-try {
-await fetch(JSONBIN_URL, {
-method: 'PUT',
-headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
-body: JSON.stringify(DB)
-});
-return true;
-} catch (err) {
-console.error('Save error:', err);
-toast('❌ فشل الحفظ', 'err');
-return false;
-}
+    try {
+        await supabaseRequest('game_data', {
+            method: 'POST',
+            headers: { 'Prefer': 'return=minimal,resolution=merge-duplicates' },
+            body: JSON.stringify({ id: 1, data: DB })
+        });
+        return true;
+    } catch (err) {
+        console.error('Save error:', err);
+        toast('❌ فشل الحفظ', 'err');
+        return false;
+    }
 }
 
 // ==================== 🆕 بدء التطبيق مع استعادة الجلسة ====================
@@ -1896,7 +1960,7 @@ async function initApp() {
 const ok = await loadData();
 if (ok) {
   // 🆕 محاولة استعادة الجلسة المحفوظة
-  if (loadUserSession()) {
+   if (await loadUserSession()) {
     console.log('✅ تم استعادة الجلسة:', currentUser);
     
     // التحقق من صلاحية الجلسة
