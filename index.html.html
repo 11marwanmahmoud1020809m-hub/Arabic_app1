@@ -1380,8 +1380,7 @@ localStorage.setItem('userSession', JSON.stringify(currentUser));
 const sessionKey = getSessionKey();
 if (sessionKey) {
 try {
-await supabaseRequest('user_sessions?user_key=eq.' + encodeURIComponent(sessionKey), {
-method: 'DELETE'
+await supabaseRequest('user_sessions1?user_key=eq.' + encodeURIComponent(sessionKey), {
 });
 await supabaseRequest('user_sessions', {
 method: 'POST',
@@ -2329,7 +2328,7 @@ return report;
 // ==================== تحميل وحفظ البيانات ====================
 async function loadData() {
 try {
-const response = await supabaseRequest('game_data?id=eq.1');
+const response = await supabaseRequest('game_data1?id=eq.1');
 const result = await response.json();
 if (result && result[0] && result[0].data) {
 DB = result[0].data;
@@ -2383,12 +2382,21 @@ root.style.setProperty('--bg-gradient', `linear-gradient(135deg, ${colors.dark} 
 return true;
 } catch (err) {
 console.error('Load error:', err);
+// 🆕 IMPORTANT: لو فشل التحميل، متخليش DB ترجع فاضية
+// استخدم نسخة محلية كـ fallback
+try {
+const local = localStorage.getItem('dahd_db_backup');
+if (local) {
+DB = JSON.parse(local);
+console.log('✅ تم استرجاع نسخة محلية من البيانات');
+}
+} catch(e) {}
 return false;
 }
 }
 async function save() {
 try {
-await supabaseRequest('game_data', {
+await supabaseRequest('game_data1', {
 method: 'POST',
 headers: { 'Prefer': 'return=minimal,resolution=merge-duplicates' },
 body: JSON.stringify({ id: 1, data: DB })
@@ -2432,11 +2440,17 @@ loadStudent();
 showScreen('studentScreen');
 }
 } else {
+toast('❌ فشل الاتصال بقاعدة البيانات', 'err');
+// 🆕 حاول تاني بعد 5 ثواني
+setTimeout(() => {
+console.log('🔄 إعادة محاولة الاتصال...');
+initApp();
+}, 5000);
+}
 // جلسة غير صالحة - مسحها
 console.log('⚠️ جلسة غير صالحة، سيتم مسحها');
 clearUserSession();
 currentUser = null;
-}
 }
 pollInterval = setInterval(async () => {
 await loadData();
